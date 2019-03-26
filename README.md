@@ -6,5 +6,5 @@ A `JUnit` XML runner/formatter for [`hspec`](http://hspec.github.io/).
 main :: IO ()
 main = do
   config <- readConfig defaultConfig =<< getArgs
-  spec `runJUnitSpec` ("/tmp/junit", "my-tests") $ config
+  spec `runJUnitSpec` ("output-dir", "my-tests") $ config
 ```
