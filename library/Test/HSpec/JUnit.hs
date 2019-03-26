@@ -11,7 +11,6 @@ import Data.Conduit.Combinators (sinkFile)
 import qualified Data.Text as T
 import System.IO.Temp (emptySystemTempFile)
 import Test.Hspec (Spec)
-import qualified Test.Hspec.Core.Util as Util
 import Test.Hspec.Formatters (Formatter(..), writeLine)
 import Test.HSpec.JUnit.Parse (parseJUnit, denormalize)
 import Test.HSpec.JUnit.Render (renderJUnit)
@@ -21,7 +20,7 @@ import Text.XML.Stream.Render (def, renderBytes)
 
 runJUnitSpec :: Spec -> (FilePath, String) -> Config -> IO Summary
 runJUnitSpec spec (path, name) config = do
-  tempFile <- emptySystemTempFile "hspec-junit"
+  tempFile <- emptySystemTempFile $ "hspec-junit-" <> name
   summary <- spec `runSpec` configWith tempFile name config
   runResourceT
     . runConduit
@@ -65,7 +64,7 @@ junitFormatter suiteName = Formatter
   , footerFormatter = writeLine "</testsuites>"
   }
  where
-  mkName = show . fixBrackets . Util.joinPath
+  mkName = show . fixBrackets . snd
   fixBrackets =
     T.replace "\"" "&quot;" . T.replace "<" "&lt;" . T.replace ">" "&gt;" . T.replace "&" "&amp;" . T.pack
   mkReason = T.unpack . fixBrackets . show
