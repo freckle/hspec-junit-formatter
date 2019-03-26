@@ -1,0 +1,35 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.1.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 577101ffbcdcbbdca4ff68ea510dbcbb1890166b11bd32a924194b85c890fd25
+
+name:           hspec-junit-formatter
+version:        0.0.1.0
+build-type:     Simple
+
+library
+  exposed-modules:
+      Test.HSpec.JUnit
+      Test.HSpec.JUnit.Parse
+      Test.HSpec.JUnit.Render
+      Test.HSpec.JUnit.Schema
+  other-modules:
+      Paths_hspec_junit_formatter
+  hs-source-dirs:
+      library
+  default-extensions: BangPatterns DeriveAnyClass DeriveFoldable DeriveFunctor DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TypeApplications TypeFamilies
+  build-depends:
+      base
+    , conduit
+    , exceptions
+    , hspec
+    , hspec-core
+    , resourcet
+    , temporary
+    , text
+    , xml-conduit
+    , xml-types
+  default-language: Haskell2010

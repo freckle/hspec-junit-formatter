@@ -1,0 +1,44 @@
+---
+name: hspec-junit-formatter
+version: 0.0.1.0
+
+dependencies:
+  - base
+
+default-extensions:
+  - BangPatterns
+  - DeriveAnyClass
+  - DeriveFoldable
+  - DeriveFunctor
+  - DeriveGeneric
+  - DeriveLift
+  - DeriveTraversable
+  - DerivingStrategies
+  - FlexibleContexts
+  - FlexibleInstances
+  - GADTs
+  - GeneralizedNewtypeDeriving
+  - LambdaCase
+  - MultiParamTypeClasses
+  - NoImplicitPrelude
+  - NoMonomorphismRestriction
+  - OverloadedStrings
+  - RankNTypes
+  - RecordWildCards
+  - ScopedTypeVariables
+  - StandaloneDeriving
+  - TypeApplications
+  - TypeFamilies
+
+library:
+  source-dirs: library
+  dependencies:
+    - conduit
+    - exceptions
+    - hspec
+    - hspec-core
+    - resourcet
+    - temporary
+    - text
+    - xml-conduit
+    - xml-types
