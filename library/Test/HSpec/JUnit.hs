@@ -67,5 +67,5 @@ junitFormatter suiteName = Formatter
  where
   mkName = show . fixBrackets . Util.joinPath
   fixBrackets =
-    T.replace "\\\"" "&quot;" . T.replace "<" "&lt;" . T.replace ">" "&gt;" . T.replace "&" "&amp;" . T.pack
+    T.replace "\"" "&quot;" . T.replace "<" "&lt;" . T.replace ">" "&gt;" . T.replace "&" "&amp;" . T.pack
   mkReason = T.unpack . fixBrackets . show
