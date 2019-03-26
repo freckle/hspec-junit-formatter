@@ -34,6 +34,7 @@ library:
   source-dirs: library
   dependencies:
     - conduit
+    - directory
     - exceptions
     - hspec
     - hspec-core

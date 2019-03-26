@@ -10,6 +10,7 @@ import Data.Conduit (runConduit, (.|))
 import Data.Conduit.Combinators (sinkFile)
 import qualified Data.Text as T
 import System.IO.Temp (emptySystemTempFile)
+import System.Directory (createDirectoryIfMissing)
 import Test.Hspec (Spec)
 import Test.Hspec.Formatters (Formatter(..), writeLine)
 import Test.HSpec.JUnit.Parse (parseJUnit, denormalize)
@@ -22,6 +23,7 @@ runJUnitSpec :: Spec -> (FilePath, String) -> Config -> IO Summary
 runJUnitSpec spec (path, name) config = do
   tempFile <- emptySystemTempFile $ "hspec-junit-" <> name
   summary <- spec `runSpec` configWith tempFile name config
+  createDirectoryIfMissing True dirPath
   runResourceT
     . runConduit
     $ parseFile def tempFile
@@ -31,8 +33,9 @@ runJUnitSpec spec (path, name) config = do
     .| denormalize
     .| renderJUnit
     .| renderBytes def
-    .| sinkFile (path <> "/" <> name <> ".xml")
+    .| sinkFile (dirPath <> "/test_results.xml")
   pure summary
+  where dirPath = path <> "/" <> name
 
 configWith :: FilePath -> String -> Config -> Config
 configWith filePath name config = config
@@ -66,5 +69,9 @@ junitFormatter suiteName = Formatter
  where
   mkName = show . fixBrackets . snd
   fixBrackets =
-    T.replace "\"" "&quot;" . T.replace "<" "&lt;" . T.replace ">" "&gt;" . T.replace "&" "&amp;" . T.pack
+    T.replace "\"" "&quot;"
+      . T.replace "<" "&lt;"
+      . T.replace ">" "&gt;"
+      . T.replace "&" "&amp;"
+      . T.pack
   mkReason = T.unpack . fixBrackets . show

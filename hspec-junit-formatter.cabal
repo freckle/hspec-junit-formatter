@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 577101ffbcdcbbdca4ff68ea510dbcbb1890166b11bd32a924194b85c890fd25
+-- hash: f99d5a162e265e513694c7c672b82972c95a8f98892646617837bd60ff1a819a
 
 name:           hspec-junit-formatter
 version:        0.0.1.0
@@ -24,6 +24,7 @@ library
   build-depends:
       base
     , conduit
+    , directory
     , exceptions
     , hspec
     , hspec-core
