@@ -88,7 +88,7 @@ testCaseOpen (parents, name) = writeLine $ mconcat
   [ "<testcase name="
   , show . fixBrackets $ T.pack name
   , " classname="
-  , show . T.intercalate "/" $ map T.pack parents
+  , show . fixBrackets . T.intercalate "/" $ map T.pack parents
   , ">"
   ]
 
