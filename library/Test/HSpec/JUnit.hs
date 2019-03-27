@@ -8,11 +8,13 @@ import Prelude
 import Control.Monad.Trans.Resource (runResourceT)
 import Data.Conduit (runConduit, (.|))
 import Data.Conduit.Combinators (sinkFile)
+import Data.Foldable (traverse_)
+import Data.Text (Text)
 import qualified Data.Text as T
 import System.IO.Temp (emptySystemTempFile)
 import System.Directory (createDirectoryIfMissing)
 import Test.Hspec (Spec)
-import Test.Hspec.Formatters (Formatter(..), writeLine)
+import Test.Hspec.Formatters (Formatter(..), writeLine, FailureReason(..), FormatM)
 import Test.HSpec.JUnit.Parse (parseJUnit, denormalize)
 import Test.HSpec.JUnit.Render (renderJUnit)
 import Test.Hspec.Runner (Config(..), Summary, runSpec)
@@ -50,28 +52,53 @@ junitFormatter suiteName = Formatter
     writeLine $ "<testsuites name=" <> show suiteName <> ">"
   -- TODO needs: package, id, timestamp, hostname, tests, failures, errors, time
   , exampleGroupStarted = \_paths name ->
-    writeLine $ "<testsuite name=" <> show (fixBrackets name) <> ">"
+    writeLine $ "<testsuite name=" <> show (fixBrackets (T.pack name)) <> ">"
   , exampleGroupDone = writeLine "</testsuite>"
   , exampleProgress = \_ _ -> pure ()
   , exampleSucceeded = \path _info ->
     writeLine $ "<testcase name=" <> mkName path <> "/>"
-  , exampleFailed = \path _info reason -> do
+  , exampleFailed = \path info reason -> do
     writeLine $ "<testcase name=" <> mkName path <> ">"
-    writeLine $ "<failure type=\"error\">" <> mkReason reason <> "</failure>"
+    writeLine $ "<failure type=\"error\">"
+    traverse_ (writeLine . fixReason) $ lines info
+    case reason of
+      Error _ err -> writeLine . fixReason $ show err
+      NoReason -> writeLine "no reason"
+      Reason err -> traverse_ (writeLine . fixReason) $ lines err
+      ExpectedButGot preface expected actual -> do
+        traverse_ writeLine preface
+        writeFound "expected" expected
+        writeFound " but got" actual
+    writeLine "</failure>"
     writeLine "</testcase>"
-  , examplePending = \path _info _reason -> do
+  , examplePending = \path info reason -> do
     writeLine $ "<testcase name=" <> mkName path <> ">"
-    --writeLine $ "<failure type=\"pending\">" <> mkReason reason <> "</failure>"
+    writeLine $ "<skipped>"
+    traverse_ (writeLine . fixReason) $ lines info
+    writeLine $ maybe "No reason given" fixReason reason
+    writeLine "</skipped>"
     writeLine "</testcase>"
   , failedFormatter = pure ()
   , footerFormatter = writeLine "</testsuites>"
   }
- where
-  mkName = show . fixBrackets . snd
-  fixBrackets =
-    T.replace "\"" "&quot;"
-      . T.replace "<" "&lt;"
-      . T.replace ">" "&gt;"
-      . T.replace "&" "&amp;"
-      . T.pack
-  mkReason = T.unpack . fixBrackets . show
+
+mkName :: (a, String) -> String
+mkName = show . fixBrackets . T.pack . snd
+
+fixBrackets :: Text -> Text
+fixBrackets =
+  T.replace "\"" "&quot;"
+    . T.replace "<" "&lt;"
+    . T.replace ">" "&gt;"
+    . T.replace "&" "&amp;"
+
+fixReason :: String -> String
+fixReason = T.unpack . fixBrackets . T.pack
+
+writeFound :: Show a => Text -> a -> FormatM ()
+writeFound msg found = case lines' of
+  [] -> pure ()
+  first : rest -> do
+    writeLine . T.unpack $ msg <> ": " <> first
+    traverse_ writeLine $ map (T.unpack . (T.replicate 9 " " <>)) rest
+  where lines' = map fixBrackets . T.splitOn "\n" . T.pack $ show found
