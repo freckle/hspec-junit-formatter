@@ -101,4 +101,4 @@ writeFound msg found = case lines' of
   first : rest -> do
     writeLine . T.unpack $ msg <> ": " <> first
     traverse_ writeLine $ map (T.unpack . (T.replicate 9 " " <>)) rest
-  where lines' = map fixBrackets . T.splitOn "\n" . T.pack $ show found
+  where lines' = map fixBrackets . T.lines . T.pack $ show found
