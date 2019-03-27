@@ -55,10 +55,11 @@ junitFormatter suiteName = Formatter
     writeLine $ "<testsuite name=" <> show (fixBrackets (T.pack name)) <> ">"
   , exampleGroupDone = writeLine "</testsuite>"
   , exampleProgress = \_ _ -> pure ()
-  , exampleSucceeded = \path _info ->
-    writeLine $ "<testcase name=" <> mkName path <> "/>"
+  , exampleSucceeded = \path _info -> do
+    testCaseOpen path
+    testCaseClose
   , exampleFailed = \path info reason -> do
-    writeLine $ "<testcase name=" <> mkName path <> ">"
+    testCaseOpen path
     writeLine $ "<failure type=\"error\">"
     traverse_ (writeLine . fixReason) $ lines info
     case reason of
@@ -70,20 +71,29 @@ junitFormatter suiteName = Formatter
         writeFound "expected" expected
         writeFound " but got" actual
     writeLine "</failure>"
-    writeLine "</testcase>"
+    testCaseClose
   , examplePending = \path info reason -> do
-    writeLine $ "<testcase name=" <> mkName path <> ">"
+    testCaseOpen path
     writeLine $ "<skipped>"
     traverse_ (writeLine . fixReason) $ lines info
     writeLine $ maybe "No reason given" fixReason reason
     writeLine "</skipped>"
-    writeLine "</testcase>"
+    testCaseClose
   , failedFormatter = pure ()
   , footerFormatter = writeLine "</testsuites>"
   }
 
-mkName :: (a, String) -> String
-mkName = show . fixBrackets . T.pack . snd
+testCaseOpen :: ([String], String) -> FormatM ()
+testCaseOpen (parents, name) = writeLine $ mconcat
+  [ "<testcase name="
+  , show . fixBrackets $ T.pack name
+  , " classname="
+  , show . T.intercalate "/" $ map T.pack parents
+  , ">"
+  ]
+
+testCaseClose :: FormatM ()
+testCaseClose = writeLine "</testcase>"
 
 fixBrackets :: Text -> Text
 fixBrackets =

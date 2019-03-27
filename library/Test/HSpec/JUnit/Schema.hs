@@ -15,7 +15,11 @@ data Suites = Suites Text [Suite]
 data Suite = Suite Text [Either Suite TestCase]
   deriving (Show)
 
-data TestCase = TestCase Text (Maybe Result)
+data TestCase = TestCase
+  { testCaseClassName :: Text
+  , testCaseName :: Text
+  , testCaseResult :: (Maybe Result)
+  }
   deriving (Show)
 
 data Result = Failure Text Text | Skipped Text

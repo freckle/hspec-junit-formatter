@@ -41,7 +41,8 @@ suite = tag' "testsuite" (requireAttr "name") $ \name ->
 
 testCase :: MonadThrow m => ConduitT Event o m (Maybe TestCase)
 testCase =
-  tag' "testcase" (requireAttr "name") $ \name -> TestCase name <$> result
+  tag' "testcase" ((,) <$> requireAttr "name" <*> requireAttr "classname")
+    $ \(name, className) -> TestCase className name <$> result
 
 result :: MonadThrow m => ConduitT Event o m (Maybe Result)
 result = choose

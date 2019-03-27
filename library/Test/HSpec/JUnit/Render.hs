@@ -39,25 +39,25 @@ suite =
       <> attr
            "failures"
            (tshow $ length
-             [ () | Right (TestCase _ (Just (Failure _ _))) <- cases ]
+             [ () | Right (TestCase _ _ (Just (Failure _ _))) <- cases ]
            )
       <> attr "errors" "0"
       <> attr
            "skipped"
-           (tshow
-           $ length [ () | Right (TestCase _ (Just (Skipped _))) <- cases ]
+           (tshow $ length
+             [ () | Right (TestCase _ _ (Just (Skipped _))) <- cases ]
            )
 
 tshow :: Show a => a -> Text
 tshow = pack . show
 
 testCase :: MonadThrow m => ConduitT TestCase Event m ()
-testCase = awaitForever $ \(TestCase name mResult) ->
-  tag "testcase" (attributes name) $ traverse_ yield mResult .| result
+testCase = awaitForever $ \(TestCase className name mResult) ->
+  tag "testcase" (attributes className name) $ traverse_ yield mResult .| result
  where
-  nameAttr name = attr "name" name <> attr "classname" name
   -- TODO these need to be made real values
-  attributes name = nameAttr name <> attr "time" "0"
+  attributes className name =
+    attr "name" name <> attr "classname" className <> attr "time" "0"
 
 result :: MonadThrow m => ConduitT Result Event m ()
 result = awaitForever go
