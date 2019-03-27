@@ -12,6 +12,7 @@ import Data.Text (Text, pack)
 import Data.XML.Types (Event)
 import Test.HSpec.JUnit.Schema (Result(..), TestCase(..), Suite(..), Suites(..))
 import Text.XML.Stream.Render (attr, content, tag)
+import Data.Hashable (hash)
 
 renderJUnit :: MonadThrow m => ConduitT Suites Event m ()
 renderJUnit = awaitForever $ \(Suites name suites) ->
@@ -31,7 +32,7 @@ suite =
   attributes name cases =
     attr "name" name
       <> attr "package" name
-      <> attr "id" "0"
+      <> attr "id" (tshow $ hash name)
       <> attr "time" "0"
       <> attr "timestamp" "1979-01-01T01:01:01"
       <> attr "hostname" "localhost"

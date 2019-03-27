@@ -13,11 +13,20 @@ import Text.XML.Stream.Parse
   (choose, content, many, requireAttr, tag', tagNoAttr)
 
 denormalize' :: Suite -> [Suite]
-denormalize' (Suite name xs) = concatMap suiteOrCase xs
+denormalize' (Suite name xs) = collapse $ concatMap suiteOrCase xs
  where
   suiteOrCase = \case
     Right x -> [Suite name [Right x]]
     Left (Suite name' ys) -> denormalize' $ Suite (name <> "/" <> name') ys
+
+collapse :: [Suite] -> [Suite]
+collapse [] = []
+collapse (x : y : xs)
+  | suiteName x == suiteName y
+  = collapse $ (Suite (suiteName x) (suiteCases x <> suiteCases y)) : xs
+  | otherwise
+  = x : collapse (y : xs)
+collapse xs@(_ : _) = xs
 
 -- | Denormalize nested <testsuite /> elements
 --

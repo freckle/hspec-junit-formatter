@@ -12,7 +12,10 @@ import Data.Text (Text)
 data Suites = Suites Text [Suite]
   deriving (Show)
 
-data Suite = Suite Text [Either Suite TestCase]
+data Suite = Suite
+  { suiteName :: Text
+  , suiteCases :: [Either Suite TestCase]
+  }
   deriving (Show)
 
 data TestCase = TestCase

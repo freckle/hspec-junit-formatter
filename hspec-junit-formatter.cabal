@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2a71b9a5283e91817df1121b0b43e41998d5ef488cff6993f48897355705c094
+-- hash: 28714c657adf1edec3ce7ee0d77d1301ea5782ac168eb38279bf6693244baebf
 
 name:           hspec-junit-formatter
 version:        0.0.0.0
@@ -26,6 +26,7 @@ library
     , conduit
     , directory
     , exceptions
+    , hashable
     , hspec
     , hspec-core
     , resourcet
