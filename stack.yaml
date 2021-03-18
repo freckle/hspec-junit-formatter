@@ -5,8 +5,7 @@ packages:
   - .
 
 ghc-options:
-  "$locals":
-    -fhide-source-paths
+  "$locals": -fhide-source-paths
     -Weverything
     -Wno-missing-exported-signatures
     -Wno-missed-specialisations
