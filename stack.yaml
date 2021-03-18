@@ -6,7 +6,6 @@ packages:
 
 ghc-options:
   "$locals": -fhide-source-paths
-    -Weverything
     -Wno-missing-exported-signatures
     -Wno-missed-specialisations
     -Wno-all-missed-specialisations
