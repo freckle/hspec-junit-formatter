@@ -1,6 +1,18 @@
 ---
 name: hspec-junit-formatter
-version: 0.0.0.0
+version: 1.0.0.0
+github: "freckle/hspec-junit-formatter"
+license: MIT
+author: "Freckle R&D"
+maintainer: "engineering@freckle.com"
+copyright: "2021 Renaissance Learning Inc"
+
+extra-source-files:
+  - README.md
+  - CHANGELOG.md
+category: Testing
+synopsis: A JUnit XML runner/formatter for hspec
+description: Allows hspec tests to write JUnit XML output for parsing in various tools.
 
 dependencies:
   - base

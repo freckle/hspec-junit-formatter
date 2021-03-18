@@ -1,14 +1,31 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.1.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 28714c657adf1edec3ce7ee0d77d1301ea5782ac168eb38279bf6693244baebf
+-- hash: df72cff73e74715035aa4d65abd942b60156d27530840dc0fe9d51c85f7a169a
 
 name:           hspec-junit-formatter
-version:        0.0.0.0
+version:        1.0.0.0
+synopsis:       A JUnit XML runner/formatter for hspec
+description:    Allows hspec tests to write JUnit XML output for parsing in various tools.
+category:       Testing
+homepage:       https://github.com/freckle/hspec-junit-formatter#readme
+bug-reports:    https://github.com/freckle/hspec-junit-formatter/issues
+author:         Freckle R&D
+maintainer:     engineering@freckle.com
+copyright:      2021 Renaissance Learning Inc
+license:        MIT
+license-file:   LICENSE
 build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/freckle/hspec-junit-formatter
 
 library
   exposed-modules:

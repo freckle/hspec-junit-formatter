@@ -1,0 +1,22 @@
+on:
+  pull_request:
+  push:
+    branches: main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.stack
+            ./.stack-work
+          key: ${{ runner.os }}-${{ hashFiles('stack.yaml') }}-${{ hashFiles('*.cabal') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ hashFiles('stack.yaml') }}-
+            ${{ runner.os }}-
+      - uses: freckle/stack-action@697bdc2715b64b3d0aa3f12406f7eef3ca3c9735
+        with:
+          weeder: false
