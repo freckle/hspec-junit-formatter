@@ -23,7 +23,7 @@ collapse :: [Suite] -> [Suite]
 collapse [] = []
 collapse (x : y : xs)
   | suiteName x == suiteName y
-  = collapse $ (Suite (suiteName x) (suiteCases x <> suiteCases y)) : xs
+  = collapse $ Suite (suiteName x) (suiteCases x <> suiteCases y) : xs
   | otherwise
   = x : collapse (y : xs)
 collapse xs@(_ : _) = xs
