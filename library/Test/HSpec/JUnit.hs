@@ -11,12 +11,13 @@ import Data.Conduit.Combinators (sinkFile)
 import Data.Foldable (traverse_)
 import Data.Text (Text)
 import qualified Data.Text as T
-import System.IO.Temp (emptySystemTempFile)
 import System.Directory (createDirectoryIfMissing)
-import Test.Hspec (Spec)
-import Test.Hspec.Formatters (Formatter(..), writeLine, FailureReason(..), FormatM)
-import Test.HSpec.JUnit.Parse (parseJUnit, denormalize)
+import System.IO.Temp (emptySystemTempFile)
+import Test.HSpec.JUnit.Parse (denormalize, parseJUnit)
 import Test.HSpec.JUnit.Render (renderJUnit)
+import Test.Hspec (Spec)
+import Test.Hspec.Formatters
+  (FailureReason(..), FormatM, Formatter(..), writeLine)
 import Test.Hspec.Runner (Config(..), Summary, runSpec)
 import Text.XML.Stream.Parse (parseFile)
 import Text.XML.Stream.Render (def, renderBytes)
@@ -60,7 +61,7 @@ junitFormatter suiteName = Formatter
     testCaseClose
   , exampleFailed = \path info reason -> do
     testCaseOpen path
-    writeLine $ "<failure type=\"error\">"
+    writeLine "<failure type=\"error\">"
     traverse_ (writeLine . fixReason) $ lines info
     case reason of
       Error _ err -> writeLine . fixReason $ show err
@@ -74,7 +75,7 @@ junitFormatter suiteName = Formatter
     testCaseClose
   , examplePending = \path info reason -> do
     testCaseOpen path
-    writeLine $ "<skipped>"
+    writeLine "<skipped>"
     traverse_ (writeLine . fixReason) $ lines info
     writeLine $ maybe "No reason given" fixReason reason
     writeLine "</skipped>"
@@ -110,5 +111,5 @@ writeFound msg found = case lines' of
   [] -> pure ()
   first : rest -> do
     writeLine . T.unpack $ msg <> ": " <> first
-    traverse_ writeLine $ map (T.unpack . (T.replicate 9 " " <>)) rest
+    traverse_ (writeLine . T.unpack . (T.replicate 9 " " <>)) rest
   where lines' = map fixBrackets . T.lines . T.pack $ show found

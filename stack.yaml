@@ -1,10 +1,7 @@
-resolver: lts-13.14
-packages:
-- .
+resolver: lts-17.5
+
 ghc-options:
-  "$locals":
-    -fhide-source-paths
-    -Weverything
+  "$locals": -fhide-source-paths
     -Wno-missing-exported-signatures
     -Wno-missed-specialisations
     -Wno-all-missed-specialisations

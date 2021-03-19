@@ -21,7 +21,7 @@ data Suite = Suite
 data TestCase = TestCase
   { testCaseClassName :: Text
   , testCaseName :: Text
-  , testCaseResult :: (Maybe Result)
+  , testCaseResult :: Maybe Result
   }
   deriving (Show)
 
