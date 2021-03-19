@@ -17,6 +17,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ hashFiles('stack.yaml') }}-
             ${{ runner.os }}-
-      - uses: freckle/stack-action@697bdc2715b64b3d0aa3f12406f7eef3ca3c9735
+      - uses: freckle/stack-action@main
         with:
           weeder: false

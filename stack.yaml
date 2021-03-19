@@ -1,8 +1,4 @@
-resolver:
-  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/17/5.yaml
-
-packages:
-  - .
+resolver: lts-17.5
 
 ghc-options:
   "$locals": -fhide-source-paths
