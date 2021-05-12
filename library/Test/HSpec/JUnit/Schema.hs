@@ -8,22 +8,28 @@ module Test.HSpec.JUnit.Schema
 import Prelude
 
 import Data.Text (Text)
+import Data.Time (UTCTime)
 
-data Suites = Suites Text [Suite]
-  deriving (Show)
+data Suites = Suites
+  { suitesName :: Text
+  , suitesSuites :: [Suite]
+  }
+  deriving stock Show
 
 data Suite = Suite
   { suiteName :: Text
-  , suiteCases :: [Either Suite TestCase]
+  , suiteTimestamp :: UTCTime
+  , suiteCases :: [TestCase]
   }
-  deriving (Show)
+  deriving stock Show
 
 data TestCase = TestCase
   { testCaseClassName :: Text
   , testCaseName :: Text
+  , testCaseDuration :: Double
   , testCaseResult :: Maybe Result
   }
-  deriving (Show)
+  deriving stock Show
 
 data Result = Failure Text Text | Skipped Text
-  deriving (Show)
+  deriving stock Show
