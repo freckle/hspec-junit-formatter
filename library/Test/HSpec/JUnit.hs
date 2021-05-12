@@ -50,15 +50,11 @@ groupItems = Map.toList . Map.fromListWith (<>) . fmap group
     (T.intercalate "/" $ T.pack <$> path, [(T.pack name, item)])
 
 itemToTestCase :: Text -> Text -> Item -> Schema.TestCase
-itemToTestCase group name item = do
-  let
-    testCase result = Schema.TestCase
-      { testCaseClassName = group
-      , testCaseName = name
-      , testCaseDuration = unSeconds $ itemDuration item
-      , testCaseResult = result
-      }
-  testCase $ case itemResult item of
+itemToTestCase group name item = Schema.TestCase
+  { testCaseClassName = group
+  , testCaseName = name
+  , testCaseDuration = unSeconds $ itemDuration item
+  , testCaseResult = case itemResult item of
     Success -> Nothing
     Pending _mLocation mMessage ->
       Just $ Schema.Skipped $ maybe "" T.pack mMessage
@@ -71,6 +67,7 @@ itemToTestCase group name item = do
           $ T.pack
           <$> fromMaybe "" preface
           : (foundLines "expected" expected <> foundLines " but got" actual)
+  }
 
 unSeconds :: Seconds -> Double
 unSeconds (Seconds x) = x
