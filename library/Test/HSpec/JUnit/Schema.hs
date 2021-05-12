@@ -9,7 +9,10 @@ import Prelude
 
 import Data.Text (Text)
 
-data Suites = Suites Text [Suite]
+data Suites = Suites
+  { suitesName :: Text
+  , suitesSuites :: [Suite]
+  }
   deriving Show
 
 data Suite = Suite

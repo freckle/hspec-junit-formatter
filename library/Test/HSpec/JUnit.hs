@@ -26,12 +26,14 @@ junitFormat file suiteName _config = pure $ \case
   ItemStarted _ -> pure ()
   ItemDone _ _ -> pure ()
   Done paths -> do
-    let suites = Schema.Suites (T.pack suiteName)
     let groups = groupItems paths
     let
-      output = suites $ groups <&> \(group, items) -> do
-        let suite xs = Schema.Suite { suiteName = group, suiteCases = xs }
-        suite $ uncurry (itemToTestCase group) <$> items
+      output = Schema.Suites
+        { suitesName = T.pack suiteName
+        , suitesSuites = groups <&> \(group, items) -> do
+          let suite xs = Schema.Suite { suiteName = group, suiteCases = xs }
+          suite $ uncurry (itemToTestCase group) <$> items
+        }
     runConduitRes
       $ sourceList [output]
       .| renderJUnit
