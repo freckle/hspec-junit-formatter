@@ -58,7 +58,6 @@ itemToTestCase group name item = do
       , testCaseDuration = unSeconds $ itemDuration item
       , testCaseResult = result
       }
-  -- data Result = Failure Text Text | Skipped Text
   testCase $ case itemResult item of
     Success -> Nothing
     Pending _mLocation mMessage ->
