@@ -1,6 +1,6 @@
 ---
 name: hspec-junit-formatter
-version: 1.0.0.4
+version: 1.2.0.0
 github: "freckle/hspec-junit-formatter"
 license: MIT
 author: "Freckle R&D"
@@ -50,7 +50,7 @@ library:
     - directory
     - exceptions
     - hashable
-    - hspec-core
+    - hspec-core <= 2.8.1
     - resourcet
     - temporary
     - text
