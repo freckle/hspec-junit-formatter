@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e60db9f354a0eabaa889cd9a5baac2747def9057274145535239897cc51c168b
+-- hash: 2384e114ce158735658aac75533a4b66a8e7e89b3588e01afb496fc04e462e5a
 
 name:           hspec-junit-formatter
-version:        1.0.0.3
+version:        1.0.1.0
 synopsis:       A JUnit XML runner/formatter for hspec
 description:    Allows hspec tests to write JUnit XML output for parsing in various tools.
 category:       Testing
@@ -30,7 +30,6 @@ source-repository head
 library
   exposed-modules:
       Test.HSpec.JUnit
-      Test.HSpec.JUnit.Parse
       Test.HSpec.JUnit.Render
       Test.HSpec.JUnit.Schema
   other-modules:
@@ -41,14 +40,28 @@ library
   build-depends:
       base <5
     , conduit
+    , containers
     , directory
     , exceptions
-    , hashable
-    , hspec
-    , hspec-core
-    , resourcet
-    , temporary
+    , filepath
+    , hspec-core >=2.8.1
     , text
+    , time
     , xml-conduit
     , xml-types
+  default-language: Haskell2010
+
+test-suite spec
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      Paths_hspec_junit_formatter
+  hs-source-dirs:
+      tests
+  default-extensions: BangPatterns DeriveAnyClass DeriveFoldable DeriveFunctor DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TypeApplications TypeFamilies
+  ghc-options: -threaded -rtsopts -O0 "-with-rtsopts=-N"
+  build-depends:
+      base <5
+    , hspec
+    , hspec-junit-formatter
   default-language: Haskell2010
