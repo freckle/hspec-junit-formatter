@@ -1,5 +1,5 @@
 module Test.HSpec.JUnit
-  ( configWith
+  ( junitFormat
   ) where
 
 import Prelude
@@ -15,15 +15,10 @@ import qualified Data.Text as T
 import Test.HSpec.JUnit.Render (renderJUnit)
 import qualified Test.HSpec.JUnit.Schema as Schema
 import Test.Hspec.Core.Format
-import Test.Hspec.Core.Runner (Config(..))
 import Text.XML.Stream.Render (def, renderBytes)
 
-configWith :: FilePath -> String -> Config -> Config
-configWith file name config =
-  config { configFormat = Just $ const $ pure $ junitFormat file name }
-
-junitFormat :: FilePath -> String -> Event -> IO ()
-junitFormat file suiteName = \case
+junitFormat :: FilePath -> String -> FormatConfig -> IO Format
+junitFormat file suiteName _config = pure $ \case
   Started -> pure ()
   GroupStarted _ -> pure ()
   GroupDone _ -> pure ()
