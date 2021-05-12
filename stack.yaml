@@ -1,4 +1,9 @@
-resolver: lts-17.8
+resolver: lts-17.11
+
+extra-deps:
+  - hspec-core-2.8.1
+  - hspec-2.8.1
+allow-newer: true
 
 ghc-options:
   "$locals": -fhide-source-paths

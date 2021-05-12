@@ -1,115 +1,85 @@
 module Test.HSpec.JUnit
-  ( runJUnitSpec
-  , configWith
+  ( configWith
   ) where
 
 import Prelude
 
-import Control.Monad.Trans.Resource (runResourceT)
-import Data.Conduit (runConduit, (.|))
+import Data.Conduit (runConduitRes, (.|))
 import Data.Conduit.Combinators (sinkFile)
-import Data.Foldable (traverse_)
+import Data.Conduit.List (sourceList)
+import Data.Functor ((<&>))
+import qualified Data.Map.Strict as Map
+import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import qualified Data.Text as T
-import System.Directory (createDirectoryIfMissing)
-import System.IO.Temp (emptySystemTempFile)
-import Test.HSpec.JUnit.Parse (denormalize, parseJUnit)
 import Test.HSpec.JUnit.Render (renderJUnit)
-import Test.Hspec (Spec)
-import Test.Hspec.Formatters
-  (FailureReason(..), FormatM, Formatter(..), writeLine)
-import Test.Hspec.Runner (Config(..), Summary, runSpec)
-import Text.XML.Stream.Parse (parseFile)
+import qualified Test.HSpec.JUnit.Schema as Schema
+import Test.Hspec.Core.Format
+import Test.Hspec.Core.Runner (Config(..))
 import Text.XML.Stream.Render (def, renderBytes)
 
-runJUnitSpec :: Spec -> (FilePath, String) -> Config -> IO Summary
-runJUnitSpec spec (path, name) config = do
-  tempFile <- emptySystemTempFile $ "hspec-junit-" <> name
-  summary <- spec `runSpec` configWith tempFile name config
-  createDirectoryIfMissing True dirPath
-  runResourceT
-    . runConduit
-    $ parseFile def tempFile
-    .| parseJUnit
-    -- HSpec's formatter cannot correctly output JUnit, so we must denormalize
-    -- nested <testsuite /> elements.
-    .| denormalize
-    .| renderJUnit
-    .| renderBytes def
-    .| sinkFile (dirPath <> "/test_results.xml")
-  pure summary
-  where dirPath = path <> "/" <> name
-
 configWith :: FilePath -> String -> Config -> Config
-configWith filePath name config = config
-  { configFormatter = Just $ junitFormatter name
-  , configOutputFile = Right filePath
-  }
+configWith file name config =
+  config { configFormat = Just $ const $ pure $ junitFormat file name }
 
-junitFormatter :: String -> Formatter
-junitFormatter suiteName = Formatter
-  { headerFormatter = do
-    writeLine "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"
-    writeLine $ "<testsuites name=" <> show suiteName <> ">"
-  -- TODO needs: package, id, timestamp, hostname, tests, failures, errors, time
-  , exampleGroupStarted = \_paths name ->
-    writeLine $ "<testsuite name=" <> show (fixBrackets (T.pack name)) <> ">"
-  , exampleGroupDone = writeLine "</testsuite>"
-  , exampleProgress = \_ _ -> pure ()
-  , exampleSucceeded = \path _info -> do
-    testCaseOpen path
-    testCaseClose
-  , exampleFailed = \path info reason -> do
-    testCaseOpen path
-    writeLine "<failure type=\"error\">"
-    traverse_ (writeLine . fixReason) $ lines info
-    case reason of
-      Error _ err -> writeLine . fixReason $ show err
-      NoReason -> writeLine "no reason"
-      Reason err -> traverse_ (writeLine . fixReason) $ lines err
-      ExpectedButGot preface expected actual -> do
-        traverse_ writeLine preface
-        writeFound "expected" expected
-        writeFound " but got" actual
-    writeLine "</failure>"
-    testCaseClose
-  , examplePending = \path info reason -> do
-    testCaseOpen path
-    writeLine "<skipped>"
-    traverse_ (writeLine . fixReason) $ lines info
-    writeLine $ maybe "No reason given" fixReason reason
-    writeLine "</skipped>"
-    testCaseClose
-  , failedFormatter = pure ()
-  , footerFormatter = writeLine "</testsuites>"
-  }
+junitFormat :: FilePath -> String -> Event -> IO ()
+junitFormat file suiteName = \case
+  Started -> pure ()
+  GroupStarted _ -> pure ()
+  GroupDone _ -> pure ()
+  Progress _ _ -> pure ()
+  ItemStarted _ -> pure ()
+  ItemDone _ _ -> pure ()
+  Done paths -> do
+    let suites = Schema.Suites (T.pack suiteName)
+    let groups = groupItems paths
+    let
+      output = suites $ groups <&> \(group, items) -> do
+        let suite xs = Schema.Suite { suiteName = group, suiteCases = xs }
+        suite $ uncurry (itemToTestCase group) <$> items
+    runConduitRes
+      $ sourceList [output]
+      .| renderJUnit
+      .| renderBytes def
+      .| sinkFile file
 
-testCaseOpen :: ([String], String) -> FormatM ()
-testCaseOpen (parents, name) = writeLine $ mconcat
-  [ "<testcase name="
-  , show . fixBrackets $ T.pack name
-  , " classname="
-  , show . fixBrackets . T.intercalate "/" $ map T.pack parents
-  , ">"
-  ]
+groupItems :: [(Path, Item)] -> [(Text, [(Text, Item)])]
+groupItems = Map.toList . Map.fromListWith (<>) . fmap group
+ where
+  group ((path, name), item) =
+    (T.intercalate "/" $ T.pack <$> path, [(T.pack name, item)])
 
-testCaseClose :: FormatM ()
-testCaseClose = writeLine "</testcase>"
+itemToTestCase :: Text -> Text -> Item -> Schema.TestCase
+itemToTestCase group name item = do
+  let
+    testCase result = Schema.TestCase
+      { testCaseClassName = group
+      , testCaseName = name
+      , testCaseDuration = unSeconds $ itemDuration item
+      , testCaseResult = result
+      }
+  -- data Result = Failure Text Text | Skipped Text
+  testCase $ case itemResult item of
+    Success -> Nothing
+    Pending _mLocation mMessage ->
+      Just $ Schema.Skipped $ maybe "" T.pack mMessage
+    Failure _mLocation reason -> Just $ Schema.Failure "error" $ case reason of
+      Error _ err -> T.pack $ show err
+      NoReason -> "no reason"
+      Reason err -> T.pack err
+      ExpectedButGot preface expected actual ->
+        T.unlines
+          $ T.pack
+          <$> fromMaybe "" preface
+          : (foundLines "expected" expected <> foundLines " but got" actual)
 
-fixBrackets :: Text -> Text
-fixBrackets =
-  T.replace "\"" "&quot;"
-    . T.replace "<" "&lt;"
-    . T.replace ">" "&gt;"
-    . T.replace "&" "&amp;"
+unSeconds :: Seconds -> Double
+unSeconds (Seconds x) = x
 
-fixReason :: String -> String
-fixReason = T.unpack . fixBrackets . T.pack
-
-writeFound :: Show a => Text -> a -> FormatM ()
-writeFound msg found = case lines' of
-  [] -> pure ()
-  first : rest -> do
-    writeLine . T.unpack $ msg <> ": " <> first
-    traverse_ (writeLine . T.unpack . (T.replicate 9 " " <>)) rest
-  where lines' = map fixBrackets . T.lines . T.pack $ show found
+foundLines :: Show a => Text -> a -> [String]
+foundLines msg found = case lines' of
+  [] -> []
+  first : rest ->
+    T.unpack (msg <> ": " <> first)
+      : (T.unpack . (T.replicate 9 " " <>) <$> rest)
+  where lines' = T.lines . T.pack $ show found

@@ -46,10 +46,10 @@ library:
   source-dirs: library
   dependencies:
     - conduit
+    - containers
     - directory
     - exceptions
     - hashable
-    - hspec
     - hspec-core
     - resourcet
     - temporary

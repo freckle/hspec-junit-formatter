@@ -10,20 +10,21 @@ import Prelude
 import Data.Text (Text)
 
 data Suites = Suites Text [Suite]
-  deriving (Show)
+  deriving Show
 
 data Suite = Suite
   { suiteName :: Text
-  , suiteCases :: [Either Suite TestCase]
+  , suiteCases :: [TestCase]
   }
-  deriving (Show)
+  deriving Show
 
 data TestCase = TestCase
   { testCaseClassName :: Text
   , testCaseName :: Text
+  , testCaseDuration :: Double
   , testCaseResult :: Maybe Result
   }
-  deriving (Show)
+  deriving Show
 
 data Result = Failure Text Text | Skipped Text
   deriving (Show)
