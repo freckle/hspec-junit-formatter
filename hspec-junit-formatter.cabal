@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b53da3460894edaa39b2ed2833237c9daba498fc6e6fdfc05d7ee2313d29c4d3
+-- hash: bdd27756f5854047e5f1bbf5ae02d41b3043f12a0e23890533ecf208ae738a95
 
 name:           hspec-junit-formatter
-version:        1.0.0.2
+version:        1.0.0.3
 synopsis:       A JUnit XML runner/formatter for hspec
 description:    Allows hspec tests to write JUnit XML output for parsing in various tools.
 category:       Testing
@@ -39,7 +39,7 @@ library
       library
   default-extensions: BangPatterns DeriveAnyClass DeriveFoldable DeriveFunctor DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TypeApplications TypeFamilies
   build-depends:
-      base <5
+      base
     , conduit
     , directory
     , exceptions
