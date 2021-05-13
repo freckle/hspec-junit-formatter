@@ -1,6 +1,10 @@
-## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.0.3...main)
+## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.0.4...main)
 
 None
+
+## [v1.0.0.4](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.0.3...v1.0.0.4)
+
+- Bring `base` bound back in to fix release
 
 ## [v1.0.0.3](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.0.2...v1.0.0.3)
 

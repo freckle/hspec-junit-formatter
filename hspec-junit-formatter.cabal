@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bdd27756f5854047e5f1bbf5ae02d41b3043f12a0e23890533ecf208ae738a95
+-- hash: e60db9f354a0eabaa889cd9a5baac2747def9057274145535239897cc51c168b
 
 name:           hspec-junit-formatter
 version:        1.0.0.3
@@ -39,7 +39,7 @@ library
       library
   default-extensions: BangPatterns DeriveAnyClass DeriveFoldable DeriveFunctor DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TypeApplications TypeFamilies
   build-depends:
-      base
+      base <5
     , conduit
     , directory
     , exceptions
