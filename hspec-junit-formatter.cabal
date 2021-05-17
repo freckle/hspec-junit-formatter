@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 06f6c8acdc4ce7894faea02c1391e21a0665149e28c6e24dd3822003577b8236
+-- hash: 2384e114ce158735658aac75533a4b66a8e7e89b3588e01afb496fc04e462e5a
 
 name:           hspec-junit-formatter
 version:        1.0.1.0
@@ -44,7 +44,7 @@ library
     , directory
     , exceptions
     , filepath
-    , hspec-core <=2.8.1
+    , hspec-core >=2.8.1
     , text
     , time
     , xml-conduit
