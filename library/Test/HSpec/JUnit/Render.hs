@@ -12,6 +12,7 @@ import Data.Text (Text, pack)
 import Data.Time.Format.ISO8601 (iso8601Show)
 import Data.XML.Types (Event)
 import Test.HSpec.JUnit.Schema (Result(..), Suite(..), Suites(..), TestCase(..))
+import Text.Printf
 import Text.XML.Stream.Render (attr, content, tag)
 
 renderJUnit :: MonadThrow m => ConduitT Suites Event m ()
@@ -34,7 +35,7 @@ suite = awaitForever $ \(i, theSuite@Suite {..}) ->
     attr "name" suiteName
       <> attr "package" suiteName
       <> attr "id" (tshow i)
-      <> attr "time" (tshow $ sumDurations suiteCases)
+      <> attr "time" (roundToStr $ sumDurations suiteCases)
       <> attr "timestamp" (pack $ iso8601Show suiteTimestamp)
       <> attr "hostname" "localhost"
       <> attr "tests" (tshow $ length suiteCases)
@@ -62,7 +63,7 @@ testCase = awaitForever $ \(TestCase className name duration mResult) ->
   attributes className name duration =
     attr "name" name <> attr "classname" className <> attr
       "time"
-      (tshow duration)
+      (roundToStr duration)
 
 result :: MonadThrow m => ConduitT Result Event m ()
 result = awaitForever go
@@ -73,3 +74,6 @@ result = awaitForever go
 
 sumDurations :: [TestCase] -> Double
 sumDurations cases = sum $ testCaseDuration <$> cases
+
+roundToStr :: (PrintfArg a) => a -> Text
+roundToStr = pack . printf "%0.9f"
