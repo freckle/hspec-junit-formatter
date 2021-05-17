@@ -7,7 +7,7 @@ None
 - Format function can be used directly without `withConfig` or `runJUnitSpec`.
 - Test case duration is now supported.
 - Failure locations are listed for some result types.
-- Timestamps in the resulting XML now displays the start time of formatting.
+- Timestamps in the resulting XML now display the start time of formatting.
 
 ## [v1.0.0.4](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.0.3...v1.0.0.4)
 
