@@ -12,12 +12,20 @@ import qualified Data.Map.Strict as Map
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Time (getCurrentTime)
+import System.Directory (createDirectoryIfMissing)
+import System.FilePath (splitFileName)
 import Test.HSpec.JUnit.Render (renderJUnit)
 import qualified Test.HSpec.JUnit.Schema as Schema
 import Test.Hspec.Core.Format
 import Text.XML.Stream.Render (def, renderBytes)
 
-junitFormat :: FilePath -> String -> FormatConfig -> IO Format
+-- | Output `hspec` results as a `JUnit` `XML` file.
+junitFormat
+  :: FilePath -- ^ File path for resulting xml file. E.G. `my-dir/output.xml`
+  -> String -- ^ Name of the test suite
+  -> FormatConfig
+  -> IO Format
 junitFormat file suiteName _config = pure $ \case
   Started -> pure ()
   GroupStarted _ -> pure ()
@@ -26,12 +34,22 @@ junitFormat file suiteName _config = pure $ \case
   ItemStarted _ -> pure ()
   ItemDone _ _ -> pure ()
   Done paths -> do
+    time <- getCurrentTime
+
+    let (directory, _) = splitFileName file
+    createDirectoryIfMissing True directory
+
     let groups = groupItems paths
     let
       output = Schema.Suites
         { suitesName = T.pack suiteName
         , suitesSuites = groups <&> \(group, items) -> do
-          let suite xs = Schema.Suite { suiteName = group, suiteCases = xs }
+          let
+            suite xs = Schema.Suite
+              { suiteName = group
+              , suiteTimestamp = time
+              , suiteCases = xs
+              }
           suite $ uncurry (itemToTestCase group) <$> items
         }
     runConduitRes
@@ -53,18 +71,45 @@ itemToTestCase group name item = Schema.TestCase
   , testCaseDuration = unSeconds $ itemDuration item
   , testCaseResult = case itemResult item of
     Success -> Nothing
-    Pending _mLocation mMessage ->
-      Just $ Schema.Skipped $ maybe "" T.pack mMessage
-    Failure _mLocation reason -> Just $ Schema.Failure "error" $ case reason of
-      Error _ err -> T.pack $ show err
-      NoReason -> "no reason"
-      Reason err -> T.pack err
-      ExpectedButGot preface expected actual ->
-        T.unlines
-          $ T.pack
-          <$> fromMaybe "" preface
-          : (foundLines "expected" expected <> foundLines " but got" actual)
+    Pending mLocation mMessage ->
+      Just $ Schema.Skipped $ prefixLocation mLocation $ prefixInfo $ maybe
+        ""
+        T.pack
+        mMessage
+    Failure mLocation reason ->
+      Just
+        $ Schema.Failure "error"
+        $ prefixLocation mLocation
+        $ prefixInfo
+        $ case reason of
+            Error _ err -> T.pack $ show err
+            NoReason -> "no reason"
+            Reason err -> T.pack err
+            ExpectedButGot preface expected actual ->
+              prefixInfo
+                $ T.unlines
+                $ T.pack
+                <$> fromMaybe "" preface
+                : (foundLines "expected" expected
+                  <> foundLines " but got" actual
+                  )
   }
+ where
+  prefixLocation mLocation str = case mLocation of
+    Nothing -> str
+    Just Location {..} ->
+      T.concat
+          [ T.pack locationFile
+          , ":"
+          , T.pack $ show locationLine
+          , ":"
+          , T.pack $ show locationColumn
+          , "\n"
+          ]
+        <> str
+  prefixInfo str
+    | T.null $ T.strip $ T.pack $ itemInfo item = str
+    | otherwise = T.pack (itemInfo item) <> "\n\n" <> str
 
 unSeconds :: Seconds -> Double
 unSeconds (Seconds x) = x

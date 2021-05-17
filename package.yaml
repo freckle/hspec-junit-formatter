@@ -48,11 +48,19 @@ library:
     - conduit
     - containers
     - directory
+    - filepath
     - exceptions
-    - hashable
     - hspec-core <= 2.8.1
-    - resourcet
-    - temporary
     - text
+    - time
     - xml-conduit
     - xml-types
+
+tests:
+  spec:
+    main: Main.hs
+    source-dirs: tests
+    ghc-options: -threaded -rtsopts -O0 "-with-rtsopts=-N"
+    dependencies:
+      - hspec
+      - hspec-junit-formatter

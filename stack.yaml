@@ -6,7 +6,9 @@ extra-deps:
 allow-newer: true
 
 ghc-options:
-  "$locals": -fhide-source-paths
+  "$locals":
+    -fhide-source-paths
+    -Weverything
     -Wno-missing-exported-signatures
     -Wno-missed-specialisations
     -Wno-all-missed-specialisations
@@ -15,3 +17,5 @@ ghc-options:
     -Wno-missing-local-signatures
     -Wno-monomorphism-restriction
     -Wno-missing-import-lists
+    -Wno-prepositive-qualified-module
+    -Wno-missing-safe-haskell-mode

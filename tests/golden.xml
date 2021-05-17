@@ -1,0 +1,6 @@
+<testsuites name="hspec-junit-format"><testsuite name="Some section" package="Some section" id="0" time="3.925291821360588e-5" timestamp="2021-05-17T15:02:48.799205127Z" hostname="localhost" tests="2" failures="1" errors="0" skipped="0"><properties/><testcase name="has a failure" classname="Some section" time="1.806393265724182e-5"><failure type="error">tests/Main.hs:19:7
+
+expected: &#34;False&#34;
+ but got: &#34;True&#34;
+</failure></testcase><testcase name="has an expectation" classname="Some section" time="2.118898555636406e-5"/></testsuite><testsuite name="Some section/A grouped context" package="Some section/A grouped context" id="1" time="2.2119958885014057e-5" timestamp="2021-05-17T15:02:48.799205127Z" hostname="localhost" tests="3" failures="0" errors="0" skipped="1"><properties/><testcase name="gets skipped" classname="Some section/A grouped context" time="9.729061275720596e-6"><skipped>tests/Main.hs:27:9
+some reason</skipped></testcase><testcase name="also happens in a group" classname="Some section/A grouped context" time="5.162903107702732e-6"/><testcase name="happens in a group" classname="Some section/A grouped context" time="7.227994501590729e-6"/></testsuite></testsuites>

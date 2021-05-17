@@ -5,42 +5,50 @@ module Test.HSpec.JUnit.Render
 import Prelude
 
 import Control.Monad.Catch (MonadThrow)
-import Data.Conduit (ConduitT, awaitForever, yield, (.|))
+import Data.Conduit (ConduitT, awaitForever, mergeSource, yield, (.|))
 import qualified Data.Conduit.List as CL
 import Data.Foldable (traverse_)
-import Data.Hashable (hash)
 import Data.Text (Text, pack)
+import Data.Time.Format.ISO8601 (iso8601Show)
 import Data.XML.Types (Event)
 import Test.HSpec.JUnit.Schema (Result(..), Suite(..), Suites(..), TestCase(..))
 import Text.XML.Stream.Render (attr, content, tag)
 
 renderJUnit :: MonadThrow m => ConduitT Suites Event m ()
-renderJUnit = awaitForever $ \(Suites name suites) ->
-  tag "testsuites" (attr "name" name) $ CL.sourceList suites .| suite
+renderJUnit = awaitForever $ \Suites {..} ->
+  tag "testsuites" (attr "name" suitesName)
+    $ CL.sourceList suitesSuites
+    .| mergeSource idStream
+    .| suite
+  where idStream = CL.iterate (+ 1) 0
 
-suite :: MonadThrow m => ConduitT Suite Event m ()
-suite = awaitForever $ \(Suite name cases) ->
-  tag "testsuite" (attributes name cases) $ do
+suite :: MonadThrow m => ConduitT (Int, Suite) Event m ()
+suite = awaitForever $ \(i, theSuite@Suite {..}) ->
+  tag "testsuite" (attributes i theSuite) $ do
     tag "properties" mempty mempty
-    CL.sourceList cases .| do
+    CL.sourceList suiteCases .| do
       awaitForever $ \x -> yield x .| testCase
  where
   -- TODO these need to be made real values
-  attributes name cases =
-    attr "name" name
-      <> attr "package" name
-      <> attr "id" (tshow $ hash name)
-      <> attr "time" (tshow $ sumDurations cases)
-      <> attr "timestamp" "1979-01-01T01:01:01"
+  attributes i Suite {..} =
+    attr "name" suiteName
+      <> attr "package" suiteName
+      <> attr "id" (tshow i)
+      <> attr "time" (tshow $ sumDurations suiteCases)
+      <> attr "timestamp" (pack $ iso8601Show suiteTimestamp)
       <> attr "hostname" "localhost"
-      <> attr "tests" (tshow $ length cases)
+      <> attr "tests" (tshow $ length suiteCases)
       <> attr
            "failures"
-           (tshow $ length [ () | Just Failure{} <- testCaseResult <$> cases ])
+           (tshow
+           $ length [ () | Just Failure{} <- testCaseResult <$> suiteCases ]
+           )
       <> attr "errors" "0"
       <> attr
            "skipped"
-           (tshow $ length [ () | Just Skipped{} <- testCaseResult <$> cases ])
+           (tshow
+           $ length [ () | Just Skipped{} <- testCaseResult <$> suiteCases ]
+           )
 
 tshow :: Show a => a -> Text
 tshow = pack . show
@@ -51,7 +59,6 @@ testCase = awaitForever $ \(TestCase className name duration mResult) ->
     $ traverse_ yield mResult
     .| result
  where
-  -- TODO these need to be made real values
   attributes className name duration =
     attr "name" name <> attr "classname" className <> attr
       "time"
