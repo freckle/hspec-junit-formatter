@@ -46,4 +46,3 @@ config :: Config
 config = defaultConfig
   { configFormat = Just $ junitFormat ".temp/test.xml" "hspec-junit-format"
   }
-
