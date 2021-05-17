@@ -1,5 +1,7 @@
 module Test.HSpec.JUnit
   ( junitFormat
+  , runJUnitSpec
+  , configWith
   ) where
 
 import Prelude
@@ -18,7 +20,18 @@ import System.FilePath (splitFileName)
 import Test.HSpec.JUnit.Render (renderJUnit)
 import qualified Test.HSpec.JUnit.Schema as Schema
 import Test.Hspec.Core.Format
+import Test.Hspec.Core.Runner
+import Test.Hspec.Core.Spec (Spec)
 import Text.XML.Stream.Render (def, renderBytes)
+
+runJUnitSpec :: Spec -> (FilePath, String) -> Config -> IO Summary
+runJUnitSpec spec (path, name) config =
+  spec `runSpec` configWith filePath name config
+  where filePath = path <> "/" <> name <> "/test_results.xml"
+
+configWith :: FilePath -> String -> Config -> Config
+configWith filePath name config =
+  config { configFormat = Just $ junitFormat filePath name }
 
 -- | Output `hspec` results as a `JUnit` `XML` file.
 junitFormat

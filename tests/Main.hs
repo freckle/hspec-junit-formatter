@@ -15,8 +15,8 @@ main = do
   summary <- flip runSpec defaultConfig $ do
     describe "XML output" $ do
       it "matches golen file" $ do
-        -- pendingWith
-        --   "Need to normalize time and timestamp values to match golden"
+        pendingWith
+          "Need to normalize time and timestamp values to match golden"
         makeJunitResults
 
         golden <- readFile "tests/golden.xml"
