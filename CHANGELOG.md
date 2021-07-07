@@ -1,6 +1,10 @@
-## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.0.4...main)
+## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.0.5...main)
 
 None
+
+## [v1.0.0.5](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.0.4...v1.0.0.5)
+
+- Fix for hspec-2.7 (add `exampleStarted`)
 
 ## [v1.0.0.4](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.0.3...v1.0.0.4)
 
