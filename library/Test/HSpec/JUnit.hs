@@ -56,6 +56,7 @@ junitFormatter suiteName = Formatter
     writeLine $ "<testsuite name=" <> show (fixBrackets (T.pack name)) <> ">"
   , exampleGroupDone = writeLine "</testsuite>"
   , exampleProgress = \_ _ -> pure ()
+  , exampleStarted = \_path -> pure ()
   , exampleSucceeded = \path _info -> do
     testCaseOpen path
     testCaseClose
