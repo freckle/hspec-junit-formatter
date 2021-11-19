@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4d70dcfded88b2369d59066eed7050829d5210959384ff3c1dbeabc62d7705c0
+-- hash: cc51256aec99ad695e523ab90f62ae4a6e8037f26edba193ceb28712837ab284
 
 name:           hspec-junit-formatter
 version:        1.0.1.0
@@ -72,6 +72,44 @@ library
     , time
     , xml-conduit
     , xml-types
+  default-language: Haskell2010
+
+test-suite readme
+  type: exitcode-stdio-1.0
+  main-is: README.lhs
+  other-modules:
+      Paths_hspec_junit_formatter
+  default-extensions:
+      BangPatterns
+      DeriveAnyClass
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveLift
+      DeriveTraversable
+      DerivingStrategies
+      FlexibleContexts
+      FlexibleInstances
+      GADTs
+      GeneralizedNewtypeDeriving
+      LambdaCase
+      MultiParamTypeClasses
+      NoImplicitPrelude
+      NoMonomorphismRestriction
+      OverloadedStrings
+      RankNTypes
+      RecordWildCards
+      ScopedTypeVariables
+      StandaloneDeriving
+      TypeApplications
+      TypeFamilies
+  ghc-options: -pgmL markdown-unlit
+  build-depends:
+      base <5
+    , hspec
+    , hspec-core
+    , hspec-junit-formatter
+    , markdown-unlit
   default-language: Haskell2010
 
 test-suite spec
