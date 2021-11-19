@@ -68,3 +68,11 @@ tests:
       - hspec-junit-formatter
       - temporary
       - xml-conduit
+  readme:
+    main: README.lhs
+    ghc-options: -pgmL markdown-unlit
+    dependencies:
+      - hspec
+      - hspec-core
+      - hspec-junit-formatter
+      - markdown-unlit
