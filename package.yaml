@@ -62,5 +62,9 @@ tests:
     source-dirs: tests
     ghc-options: -threaded -rtsopts -O0 "-with-rtsopts=-N"
     dependencies:
+      - containers
+      - filepath
       - hspec
       - hspec-junit-formatter
+      - temporary
+      - xml-conduit

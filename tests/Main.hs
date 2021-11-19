@@ -6,43 +6,45 @@ where
 import Prelude
 
 import Control.Monad (void)
-import Test.HSpec.JUnit (junitFormat)
+import qualified Data.Map.Strict as Map
+import qualified ExampleSpec
+import System.FilePath ((</>))
+import System.IO.Temp (withSystemTempDirectory)
+import Test.HSpec.JUnit
 import Test.Hspec
 import Test.Hspec.Runner
+import qualified Text.XML as XML
 
 main :: IO ()
-main = do
-  summary <- flip runSpec defaultConfig $ do
-    describe "XML output" $ do
-      it "matches golen file" $ do
-        pendingWith
-          "Need to normalize time and timestamp values to match golden"
-        makeJunitResults
+main = hspec $ do
+  describe "XML output" $ do
+    it "matches golden file" $ do
+      withJUNitReport ExampleSpec.spec $ \doc -> do
+        golden <- XML.readFile XML.def "tests/golden.xml"
+        removeTimeAttributes doc `shouldBe` removeTimeAttributes golden
 
-        golden <- readFile "tests/golden.xml"
-        test <- readFile ".temp/test.xml"
+withJUNitReport :: Spec -> (XML.Document -> IO ()) -> IO ()
+withJUNitReport spec f = withSystemTempDirectory "" $ \tmp -> do
+  let path = tmp </> "test.xml"
+  let config = configWith path "hspec-junit-format" defaultConfig
+  void $ runSpec spec config
+  f =<< XML.readFile XML.def path
 
-        test `shouldBe` golden
+-- | Remove volatile attributes so they don't invalidate comparison
+removeTimeAttributes :: XML.Document -> XML.Document
+removeTimeAttributes =
+  removeAttributesByName "time" . removeAttributesByName "timestamp"
 
-  evaluateSummary summary
-
-makeJunitResults :: IO ()
-makeJunitResults = void $ flip runSpec config $ do
-  describe "Some section" $ do
-    it "has an expectation" $ do
-      True `shouldBe` True
-    it "has a failure" $ do
-      True `shouldBe` False
-
-    context "A grouped context" $ do
-      it "happens in a group" $ do
-        True `shouldBe` True
-      it "also happens in a group" $ do
-        True `shouldBe` True
-      it "gets skipped" $ do
-        pendingWith "some reason"
-
-config :: Config
-config = defaultConfig
-  { configFormat = Just $ junitFormat ".temp/test.xml" "hspec-junit-format"
+removeAttributesByName :: XML.Name -> XML.Document -> XML.Document
+removeAttributesByName name doc = doc
+  { XML.documentRoot = go $ XML.documentRoot doc
   }
+ where
+  go el = el
+    { XML.elementAttributes = Map.delete name $ XML.elementAttributes el
+    , XML.elementNodes = map (onNodeElement go) $ XML.elementNodes el
+    }
+
+  onNodeElement f = \case
+    XML.NodeElement el -> XML.NodeElement $ f el
+    n -> n
