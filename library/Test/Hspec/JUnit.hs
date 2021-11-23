@@ -1,10 +1,10 @@
 module Test.Hspec.JUnit
-    ( configWithJUnit
-    , junitFormat
+  ( configWithJUnit
+  , junitFormat
 
-    -- * Configuration
-    , module Test.Hspec.JUnit.Config
-    ) where
+  -- * Configuration
+  , module Test.Hspec.JUnit.Config
+  ) where
 
 import Prelude
 
