@@ -1,6 +1,9 @@
 module Test.Hspec.JUnit
     ( configWithJUnit
     , junitFormat
+
+    -- * Configuration
+    , module Test.Hspec.JUnit.Config
     ) where
 
 import Prelude

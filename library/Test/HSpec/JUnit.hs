@@ -14,7 +14,6 @@ import Test.Hspec.Core.Runner
 import Test.Hspec.Core.Spec (Spec)
 import Test.Hspec.JUnit hiding (junitFormat)
 import qualified Test.Hspec.JUnit as JUnit
-import Test.Hspec.JUnit.Config
 
 runJUnitSpec :: Spec -> (FilePath, String) -> Config -> IO Summary
 runJUnitSpec spec (path, name) config =
