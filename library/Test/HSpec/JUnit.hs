@@ -1,8 +1,10 @@
 module Test.HSpec.JUnit
+  {-# DEPRECATED "Use Test.Hspec.JUnit instead" #-}
   ( junitFormat
   , runJUnitSpec
   , configWith
-  ) where
+  )
+  where
 
 import Prelude
 

@@ -10,8 +10,9 @@ import qualified Data.Map.Strict as Map
 import qualified ExampleSpec
 import System.FilePath ((</>))
 import System.IO.Temp (withSystemTempDirectory)
-import Test.HSpec.JUnit
 import Test.Hspec
+import Test.Hspec.JUnit
+import Test.Hspec.JUnit.Config
 import Test.Hspec.Runner
 import qualified Text.XML as XML
 
@@ -25,9 +26,14 @@ main = hspec $ do
 
 withJUNitReport :: Spec -> (XML.Document -> IO ()) -> IO ()
 withJUNitReport spec f = withSystemTempDirectory "" $ \tmp -> do
-  let path = tmp </> "test.xml"
-  let config = configWith path "hspec-junit-format" defaultConfig
-  void $ runSpec spec config
+  let
+    path = tmp </> "test.xml"
+    junitConfig =
+      setJUnitConfigOutputDirectory tmp
+        $ setJUnitConfigOutputName "test.xml"
+        $ defaultJUnitConfig "hspec-junit-format"
+    hspecConfig = configWithJUnit junitConfig defaultConfig
+  void $ runSpec spec hspecConfig
   f =<< XML.readFile XML.def path
 
 -- | Remove volatile attributes so they don't invalidate comparison
