@@ -26,10 +26,12 @@ import Test.Hspec.JUnit.Render (renderJUnit)
 import qualified Test.Hspec.JUnit.Schema as Schema
 import Text.XML.Stream.Render (def, renderBytes)
 
+-- | Modify an Hspec 'Config' to use 'junitFormat'
 configWithJUnit :: JUnitConfig -> Config -> Config
 configWithJUnit junitConfig config =
   config { configFormat = Just $ junitFormat junitConfig }
 
+-- | Hspec 'configFormat' that generates a JUnit report
 junitFormat :: JUnitConfig -> FormatConfig -> IO Format
 junitFormat junitConfig _config = pure $ \case
   Started -> pure ()
