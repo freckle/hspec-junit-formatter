@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cc51256aec99ad695e523ab90f62ae4a6e8037f26edba193ceb28712837ab284
+-- hash: 004a7ac815bc1aabea9d6d555202f37d8635ca6a3b1a85de531b9020369bf7c7
 
 name:           hspec-junit-formatter
 version:        1.0.1.0
@@ -30,8 +30,12 @@ source-repository head
 library
   exposed-modules:
       Test.HSpec.JUnit
+      Test.Hspec.JUnit
+      Test.Hspec.JUnit.Config
       Test.HSpec.JUnit.Render
+      Test.Hspec.JUnit.Render
       Test.HSpec.JUnit.Schema
+      Test.Hspec.JUnit.Schema
   other-modules:
       Paths_hspec_junit_formatter
   hs-source-dirs:
