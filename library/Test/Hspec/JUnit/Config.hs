@@ -6,10 +6,12 @@ module Test.Hspec.JUnit.Config
   , setJUnitConfigOutputDirectory
   , setJUnitConfigOutputName
   , setJUnitConfigOutputFile
+  , setJUnitConfigSourcePathPrefix
 
   -- * Use
   , getJUnitConfigOutputFile
   , getJUnitConfigSuiteName
+  , getJUnitPrefixSourcePath
   ) where
 
 import Prelude
@@ -23,6 +25,7 @@ data JUnitConfig = JUnitConfig
   , junitConfigOutputName :: FilePath
   , junitConfigOutputFile :: Maybe FilePath
   , junitConfigSuiteName :: Text
+  , junitConfigSourcePathPrefix :: Maybe FilePath
   }
 
 -- | Construct a 'JUnitConfig' given a suite name
@@ -35,6 +38,7 @@ defaultJUnitConfig name = JUnitConfig
   , junitConfigOutputName = "junit.xml"
   , junitConfigOutputFile = Nothing
   , junitConfigSuiteName = name
+  , junitConfigSourcePathPrefix = Nothing
   }
 
 -- | Set the directory within which to generate the report
@@ -59,6 +63,16 @@ setJUnitConfigOutputName x config = config { junitConfigOutputName = x }
 setJUnitConfigOutputFile :: FilePath -> JUnitConfig -> JUnitConfig
 setJUnitConfigOutputFile x config = config { junitConfigOutputFile = Just x }
 
+-- | Set a prefix to apply to source paths in the report
+--
+-- Default is none. This can be required if you run specs from a sub-directory
+-- in a monorepository, and you need reported paths to be from the repository
+-- root.
+--
+setJUnitConfigSourcePathPrefix :: FilePath -> JUnitConfig -> JUnitConfig
+setJUnitConfigSourcePathPrefix x config =
+  config { junitConfigSourcePathPrefix = Just x }
+
 -- | Retrieve the full path to the generated report
 getJUnitConfigOutputFile :: JUnitConfig -> FilePath
 getJUnitConfigOutputFile JUnitConfig {..} = fromMaybe
@@ -68,3 +82,11 @@ getJUnitConfigOutputFile JUnitConfig {..} = fromMaybe
 -- | Retrieve the suite name given on construction
 getJUnitConfigSuiteName :: JUnitConfig -> Text
 getJUnitConfigSuiteName = junitConfigSuiteName
+
+-- | Retrieve the function to apply to reported source paths
+--
+-- Will be 'id' if no prefix configured.
+--
+getJUnitPrefixSourcePath :: JUnitConfig -> FilePath -> FilePath
+getJUnitPrefixSourcePath JUnitConfig {..} =
+  maybe id (</>) junitConfigSourcePathPrefix
