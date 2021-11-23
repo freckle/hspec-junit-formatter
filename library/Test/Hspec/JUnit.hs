@@ -57,7 +57,7 @@ junitFormat junitConfig _config = pure $ \case
               , suiteTimestamp = time
               , suiteCases = xs
               }
-          suite $ uncurry (itemToTestCase group) <$> items
+          suite $ uncurry (itemToTestCase applyPrefix group) <$> items
         }
 
     runConduitRes
@@ -68,6 +68,7 @@ junitFormat junitConfig _config = pure $ \case
  where
   file = getJUnitConfigOutputFile junitConfig
   suiteName = getJUnitConfigSuiteName junitConfig
+  applyPrefix = getJUnitPrefixSourcePath junitConfig
 
 groupItems :: [(Path, Item)] -> [(Text, [(Text, Item)])]
 groupItems = Map.toList . Map.fromListWith (<>) . fmap group
@@ -75,8 +76,9 @@ groupItems = Map.toList . Map.fromListWith (<>) . fmap group
   group ((path, name), item) =
     (T.intercalate "/" $ pack <$> path, [(pack name, item)])
 
-itemToTestCase :: Text -> Text -> Item -> Schema.TestCase
-itemToTestCase group name item = Schema.TestCase
+itemToTestCase
+  :: (FilePath -> FilePath) -> Text -> Text -> Item -> Schema.TestCase
+itemToTestCase applyPrefix group name item = Schema.TestCase
   { testCaseClassName = group
   , testCaseName = name
   , testCaseDuration = unSeconds $ itemDuration item
@@ -110,7 +112,7 @@ itemToTestCase group name item = Schema.TestCase
     Nothing -> str
     Just Location {..} ->
       mconcat
-          [ pack locationFile
+          [ pack $ applyPrefix locationFile
           , ":"
           , pack $ show locationLine
           , ":"
