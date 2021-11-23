@@ -1,16 +1,16 @@
 module Test.Hspec.JUnit.Config
-    ( JUnitConfig
+  ( JUnitConfig
 
-    -- * Construction
-    , defaultJUnitConfig
-    , setJUnitConfigOutputDirectory
-    , setJUnitConfigOutputName
-    , setJUnitConfigOutputFile
+  -- * Construction
+  , defaultJUnitConfig
+  , setJUnitConfigOutputDirectory
+  , setJUnitConfigOutputName
+  , setJUnitConfigOutputFile
 
-    -- * Use
-    , getJUnitConfigOutputFile
-    , getJUnitConfigSuiteName
-    ) where
+  -- * Use
+  , getJUnitConfigOutputFile
+  , getJUnitConfigSuiteName
+  ) where
 
 import Prelude
 

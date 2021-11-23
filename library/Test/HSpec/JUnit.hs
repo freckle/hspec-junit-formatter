@@ -3,8 +3,7 @@ module Test.HSpec.JUnit
   ( junitFormat
   , runJUnitSpec
   , configWith
-  )
-  where
+  ) where
 
 import Prelude
 
