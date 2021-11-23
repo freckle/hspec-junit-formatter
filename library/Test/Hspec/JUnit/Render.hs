@@ -11,7 +11,7 @@ import Data.Foldable (traverse_)
 import Data.Text (Text, pack)
 import Data.Time.Format.ISO8601 (iso8601Show)
 import Data.XML.Types (Event)
-import Test.HSpec.JUnit.Schema (Result(..), Suite(..), Suites(..), TestCase(..))
+import Test.Hspec.JUnit.Schema (Result(..), Suite(..), Suites(..), TestCase(..))
 import Text.Printf
 import Text.XML.Stream.Render (attr, content, tag)
 
