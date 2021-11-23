@@ -1,6 +1,11 @@
-## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.0.4...main)
+## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.2.0...main)
 
 None
+
+## [v1.0.2.0](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.1.0...v1.0.2.0)
+
+- Create `Test.Hspec` module-space and deprecate misspelled `Test.HSpec` modules
+- Introduce `configWithJUnit` and `JUnitConfig`
 
 ## [v1.0.1.0](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.0.4...v1.0.1.0)
 

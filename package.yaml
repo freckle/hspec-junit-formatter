@@ -1,6 +1,6 @@
 ---
 name: hspec-junit-formatter
-version: 1.0.1.0
+version: 1.0.2.0
 github: "freckle/hspec-junit-formatter"
 license: MIT
 author: "Freckle R&D"
