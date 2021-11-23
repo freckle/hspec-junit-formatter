@@ -19,21 +19,27 @@ main :: IO ()
 main = hspec $ do
   describe "XML output" $ do
     it "matches golden file" $ do
-      withJUNitReport ExampleSpec.spec $ \doc -> do
+      withJUnitReport ExampleSpec.spec $ \doc -> do
         golden <- XML.readFile XML.def "tests/golden.xml"
         removeTimeAttributes doc `shouldBe` removeTimeAttributes golden
 
-withJUNitReport :: Spec -> (XML.Document -> IO ()) -> IO ()
-withJUNitReport spec f = withSystemTempDirectory "" $ \tmp -> do
-  let
-    path = tmp </> "test.xml"
-    junitConfig =
-      setJUnitConfigOutputDirectory tmp
-        $ setJUnitConfigOutputName "test.xml"
-        $ defaultJUnitConfig "hspec-junit-format"
-    hspecConfig = configWithJUnit junitConfig defaultConfig
-  void $ runSpec spec hspecConfig
-  f =<< XML.readFile XML.def path
+withJUnitReport :: Spec -> (XML.Document -> IO ()) -> IO ()
+withJUnitReport = withJUnitReportConfig id
+
+withJUnitReportConfig
+  :: (JUnitConfig -> JUnitConfig) -> Spec -> (XML.Document -> IO ()) -> IO ()
+withJUnitReportConfig modifyConfig spec f =
+  withSystemTempDirectory "" $ \tmp -> do
+    let
+      path = tmp </> "test.xml"
+      junitConfig =
+        modifyConfig
+          $ setJUnitConfigOutputDirectory tmp
+          $ setJUnitConfigOutputName "test.xml"
+          $ defaultJUnitConfig "hspec-junit-format"
+      hspecConfig = configWithJUnit junitConfig defaultConfig
+    void $ runSpec spec hspecConfig
+    f =<< XML.readFile XML.def path
 
 -- | Remove volatile attributes so they don't invalidate comparison
 removeTimeAttributes :: XML.Document -> XML.Document
