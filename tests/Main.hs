@@ -7,6 +7,8 @@ import Prelude
 
 import Control.Monad (void)
 import qualified Data.Map.Strict as Map
+import Data.Text (Text)
+import qualified Data.Text as T
 import qualified ExampleSpec
 import System.FilePath ((</>))
 import System.IO.Temp (withSystemTempDirectory)
@@ -22,6 +24,16 @@ main = hspec $ do
       withJUnitReport ExampleSpec.spec $ \doc -> do
         golden <- XML.readFile XML.def "tests/golden.xml"
         removeTimeAttributes doc `shouldBe` removeTimeAttributes golden
+
+    it "can prefix source paths" $ do
+      let modify = setJUnitConfigSourcePathPrefix "lol/monorepo"
+
+      withJUnitReportConfig modify ExampleSpec.spec $ \doc -> do
+        let
+          root = XML.documentRoot doc
+          hasPrefix = ("lol/monorepo/tests/ExampleSpec.hs" `T.isPrefixOf`)
+
+        elementInnerTexts root `shouldSatisfy` all hasPrefix
 
 withJUnitReport :: Spec -> (XML.Document -> IO ()) -> IO ()
 withJUnitReport = withJUnitReportConfig id
@@ -59,3 +71,12 @@ removeAttributesByName name doc = doc
   onNodeElement f = \case
     XML.NodeElement el -> XML.NodeElement $ f el
     n -> n
+
+elementInnerTexts :: XML.Element -> [Text]
+elementInnerTexts = concatMap go . XML.elementNodes
+ where
+  go :: XML.Node -> [Text]
+  go = \case
+    XML.NodeElement el -> elementInnerTexts el
+    XML.NodeContent x -> [x]
+    _ -> []
