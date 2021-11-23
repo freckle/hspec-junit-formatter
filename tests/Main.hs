@@ -12,7 +12,6 @@ import System.FilePath ((</>))
 import System.IO.Temp (withSystemTempDirectory)
 import Test.Hspec
 import Test.Hspec.JUnit
-import Test.Hspec.JUnit.Config
 import Test.Hspec.Runner
 import qualified Text.XML as XML
 

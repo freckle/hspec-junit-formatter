@@ -16,7 +16,6 @@ import Text.Markdown.Unlit ()
 import Test.Hspec
 import Test.Hspec.Core.Runner (defaultConfig, hspecWith)
 import Test.Hspec.JUnit
-import Test.Hspec.JUnit.Config
 
 main :: IO ()
 main = do
