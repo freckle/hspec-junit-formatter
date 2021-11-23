@@ -15,15 +15,16 @@ import Text.Markdown.Unlit ()
 ```haskell
 import Test.Hspec
 import Test.Hspec.Core.Runner (defaultConfig, hspecWith)
-import qualified Test.HSpec.JUnit as JUnit
+import Test.Hspec.JUnit
+import Test.Hspec.JUnit.Config
 
 main :: IO ()
 main = do
   let
-    report = "/tmp/test-results.xml"
-    config = JUnit.configWith report "my-tests" defaultConfig
+    junitConfig = setJUnitConfigOutputDirectory "/tmp" $ defaultJUnitConfig "my-tests"
+    hspecConfig = configWithJUnit junitConfig defaultConfig
 
-  hspecWith config spec
+  hspecWith hspecConfig spec
 
 spec :: Spec
 spec = describe "Addition" $ do
