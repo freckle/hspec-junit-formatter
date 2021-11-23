@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b7badd56061db232121b9d245e608f10ebcfbcf0310c22b971cc332a2b021931
+-- hash: 5f3ab474fe6bbc45e3e8db1b7b701bf4426e9bfb4a37ff46ac87fcf9402b6390
 
 name:           hspec-junit-formatter
 version:        1.0.2.0
@@ -156,5 +156,6 @@ test-suite spec
     , hspec
     , hspec-junit-formatter
     , temporary
+    , text
     , xml-conduit
   default-language: Haskell2010

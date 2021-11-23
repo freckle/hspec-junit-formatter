@@ -67,6 +67,7 @@ tests:
       - hspec
       - hspec-junit-formatter
       - temporary
+      - text
       - xml-conduit
   readme:
     main: README.lhs
