@@ -79,10 +79,7 @@ groupItems = Map.toList . Map.fromListWith (<>) . fmap group
 itemToTestCase
   :: (FilePath -> FilePath) -> Text -> Text -> Item -> Schema.TestCase
 itemToTestCase applyPrefix group name item = Schema.TestCase
-  { testCaseLocation = case itemResult item of
-    Success -> Nothing
-    Pending mLocation _ -> toSchemaLocation <$> mLocation
-    Failure mLocation _ -> toSchemaLocation <$> mLocation
+  { testCaseLocation = toSchemaLocation <$> itemResultLocation item
   , testCaseClassName = group
   , testCaseName = name
   , testCaseDuration = unSeconds $ itemDuration item
@@ -112,11 +109,6 @@ itemToTestCase applyPrefix group name item = Schema.TestCase
                   )
   }
  where
-  toSchemaLocation Location {..} = Schema.Location
-    { Schema.locationFile = locationFile
-    , Schema.locationLine = fromIntegral $ max 0 locationLine
-    }
-
   prefixLocation mLocation str = case mLocation of
     Nothing -> str
     Just Location {..} ->
@@ -132,6 +124,18 @@ itemToTestCase applyPrefix group name item = Schema.TestCase
   prefixInfo str
     | T.null $ T.strip $ pack $ itemInfo item = str
     | otherwise = pack (itemInfo item) <> "\n\n" <> str
+
+itemResultLocation :: Item -> Maybe Location
+itemResultLocation item = case itemResult item of
+  Success -> Nothing
+  Pending mLocation _ -> mLocation
+  Failure mLocation _ -> mLocation
+
+toSchemaLocation :: Location -> Schema.Location
+toSchemaLocation Location {..} = Schema.Location
+  { Schema.locationFile = locationFile
+  , Schema.locationLine = fromIntegral $ max 0 locationLine
+  }
 
 unSeconds :: Seconds -> Double
 unSeconds (Seconds x) = x
