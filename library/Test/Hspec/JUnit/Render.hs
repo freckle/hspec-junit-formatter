@@ -11,7 +11,8 @@ import Data.Foldable (traverse_)
 import Data.Text (Text, pack)
 import Data.Time.Format.ISO8601 (iso8601Show)
 import Data.XML.Types (Event)
-import Test.Hspec.JUnit.Schema (Result(..), Suite(..), Suites(..), TestCase(..))
+import Test.Hspec.JUnit.Schema
+  (Location(..), Result(..), Suite(..), Suites(..), TestCase(..))
 import Text.Printf
 import Text.XML.Stream.Render (attr, content, tag)
 
@@ -55,15 +56,18 @@ tshow :: Show a => a -> Text
 tshow = pack . show
 
 testCase :: MonadThrow m => ConduitT TestCase Event m ()
-testCase = awaitForever $ \(TestCase className name duration mResult) ->
-  tag "testcase" (attributes className name duration)
-    $ traverse_ yield mResult
-    .| result
+testCase =
+  awaitForever $ \(TestCase mLocation className name duration mResult) ->
+    tag "testcase" (attributes mLocation className name duration)
+      $ traverse_ yield mResult
+      .| result
  where
-  attributes className name duration =
-    attr "name" name <> attr "classname" className <> attr
-      "time"
-      (roundToStr duration)
+  attributes mLocation className name duration =
+    maybe mempty (attr "file" . pack . locationFile) mLocation
+      <> maybe mempty (attr "line" . pack . show . locationLine) mLocation
+      <> attr "name" name
+      <> attr "classname" className
+      <> attr "time" (roundToStr duration)
 
 result :: MonadThrow m => ConduitT Result Event m ()
 result = awaitForever go

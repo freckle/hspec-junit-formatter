@@ -8,6 +8,7 @@ module Test.Hspec.JUnit
 
 import Prelude
 
+import Control.Applicative ((<|>))
 import Data.Conduit (runConduitRes, (.|))
 import Data.Conduit.Combinators (sinkFile)
 import Data.Conduit.List (sourceList)
@@ -79,7 +80,9 @@ groupItems = Map.toList . Map.fromListWith (<>) . fmap group
 itemToTestCase
   :: (FilePath -> FilePath) -> Text -> Text -> Item -> Schema.TestCase
 itemToTestCase applyPrefix group name item = Schema.TestCase
-  { testCaseClassName = group
+  { testCaseLocation =
+    toSchemaLocation <$> (itemResultLocation item <|> itemLocation item)
+  , testCaseClassName = group
   , testCaseName = name
   , testCaseDuration = unSeconds $ itemDuration item
   , testCaseResult = case itemResult item of
@@ -123,6 +126,18 @@ itemToTestCase applyPrefix group name item = Schema.TestCase
   prefixInfo str
     | T.null $ T.strip $ pack $ itemInfo item = str
     | otherwise = pack (itemInfo item) <> "\n\n" <> str
+
+itemResultLocation :: Item -> Maybe Location
+itemResultLocation item = case itemResult item of
+  Success -> Nothing
+  Pending mLocation _ -> mLocation
+  Failure mLocation _ -> mLocation
+
+toSchemaLocation :: Location -> Schema.Location
+toSchemaLocation Location {..} = Schema.Location
+  { Schema.locationFile = locationFile
+  , Schema.locationLine = fromIntegral $ max 0 locationLine
+  }
 
 unSeconds :: Seconds -> Double
 unSeconds (Seconds x) = x
