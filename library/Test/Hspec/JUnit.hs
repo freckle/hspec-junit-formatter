@@ -79,7 +79,11 @@ groupItems = Map.toList . Map.fromListWith (<>) . fmap group
 itemToTestCase
   :: (FilePath -> FilePath) -> Text -> Text -> Item -> Schema.TestCase
 itemToTestCase applyPrefix group name item = Schema.TestCase
-  { testCaseClassName = group
+  { testCaseLocation = case itemResult item of
+    Success -> Nothing
+    Pending mLocation _ -> toSchemaLocation <$> mLocation
+    Failure mLocation _ -> toSchemaLocation <$> mLocation
+  , testCaseClassName = group
   , testCaseName = name
   , testCaseDuration = unSeconds $ itemDuration item
   , testCaseResult = case itemResult item of
@@ -108,6 +112,13 @@ itemToTestCase applyPrefix group name item = Schema.TestCase
                   )
   }
  where
+  toSchemaLocation Location {..} = Schema.Location
+    { Schema.locationFile = locationFile
+    , Schema.locationLine = if locationLine >= 0
+      then fromIntegral locationLine
+      else 0
+    }
+
   prefixLocation mLocation str = case mLocation of
     Nothing -> str
     Just Location {..} ->

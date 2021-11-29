@@ -2,6 +2,7 @@ module Test.Hspec.JUnit.Schema
   ( Suites(..)
   , Suite(..)
   , TestCase(..)
+  , Location(..)
   , Result(..)
   ) where
 
@@ -9,6 +10,7 @@ import Prelude
 
 import Data.Text (Text)
 import Data.Time (UTCTime)
+import Numeric.Natural
 
 data Suites = Suites
   { suitesName :: Text
@@ -24,10 +26,17 @@ data Suite = Suite
   deriving stock Show
 
 data TestCase = TestCase
-  { testCaseClassName :: Text
+  { testCaseLocation :: Maybe Location
+  , testCaseClassName :: Text
   , testCaseName :: Text
   , testCaseDuration :: Double
   , testCaseResult :: Maybe Result
+  }
+  deriving stock Show
+
+data Location = Location
+  { locationFile :: FilePath
+  , locationLine :: Natural
   }
   deriving stock Show
 

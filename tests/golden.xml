@@ -8,7 +8,12 @@
     timestamp="2021-05-17T15:36:10.205608409Z"
     tests="2" failures="1" errors="0" skipped="0">
     <properties/>
-    <testcase name="has a failure" classname="Some section" time="0.000015537">
+    <testcase
+      file="tests/ExampleSpec.hs"
+      line="18"
+      name="has a failure"
+      classname="Some section"
+      time="0.000015537">
       <failure type="error">tests/ExampleSpec.hs:18:7
 
 expected: &#34;False&#34;
@@ -30,6 +35,8 @@ expected: &#34;False&#34;
     tests="3" failures="0" errors="0" skipped="1">
     <properties/>
     <testcase
+      file="tests/ExampleSpec.hs"
+      line="26"
       name="gets skipped"
       classname="Some section/A grouped context"
       time="0.000006765">
