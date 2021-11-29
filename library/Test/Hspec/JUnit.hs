@@ -114,9 +114,7 @@ itemToTestCase applyPrefix group name item = Schema.TestCase
  where
   toSchemaLocation Location {..} = Schema.Location
     { Schema.locationFile = locationFile
-    , Schema.locationLine = if locationLine >= 0
-      then fromIntegral locationLine
-      else 0
+    , Schema.locationLine = fromIntegral $ max 0 locationLine
     }
 
   prefixLocation mLocation str = case mLocation of
