@@ -10,6 +10,8 @@ copyright: "2021 Renaissance Learning Inc"
 extra-source-files:
   - README.md
   - CHANGELOG.md
+  - tests/golden.xml
+
 category: Testing
 synopsis: A JUnit XML runner/formatter for hspec
 description: Allows hspec tests to write JUnit XML output for parsing in various tools.
