@@ -21,6 +21,8 @@ expected: &#34;False&#34;
 </failure>
     </testcase>
     <testcase
+      file="tests/ExampleSpec.hs"
+      line="15"
       name="has an expectation"
       classname="Some section"
       time="0.000016818"/>
@@ -44,10 +46,14 @@ expected: &#34;False&#34;
 some reason</skipped>
     </testcase>
     <testcase
+      file="tests/ExampleSpec.hs"
+      line="23"
       name="also happens in a group"
       classname="Some section/A grouped context"
       time="0.000007421"/>
     <testcase
+      file="tests/ExampleSpec.hs"
+      line="21"
       name="happens in a group"
       classname="Some section/A grouped context"
       time="0.000006823"/>
