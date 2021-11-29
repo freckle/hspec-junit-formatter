@@ -6,6 +6,7 @@ where
 import Prelude
 
 import Control.Monad (void)
+import Data.Char (isSpace)
 import qualified Data.Map.Strict as Map
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -23,7 +24,7 @@ main = hspec $ do
     it "matches golden file" $ do
       withJUnitReport ExampleSpec.spec $ \doc -> do
         golden <- XML.readFile XML.def "tests/golden.xml"
-        removeTimeAttributes doc `shouldBe` removeTimeAttributes golden
+        normalizeDoc doc `shouldBe` normalizeDoc golden
 
     it "can prefix source paths" $ do
       let modify = setJUnitConfigSourcePathPrefix "lol/monorepo"
@@ -52,6 +53,23 @@ withJUnitReportConfig modifyConfig spec f =
       hspecConfig = configWithJUnit junitConfig defaultConfig
     void $ runSpec spec hspecConfig
     f =<< XML.readFile XML.def path
+
+normalizeDoc :: XML.Document -> XML.Document
+normalizeDoc = removeWhitespaceNodes . removeTimeAttributes
+
+removeWhitespaceNodes :: XML.Document -> XML.Document
+removeWhitespaceNodes doc = doc
+  { XML.documentRoot = go $ XML.documentRoot doc
+  }
+ where
+  go el =
+    el { XML.elementNodes = concatMap filterWhitespace $ XML.elementNodes el }
+
+  filterWhitespace :: XML.Node -> [XML.Node]
+  filterWhitespace = \case
+    XML.NodeElement el -> [XML.NodeElement $ go el]
+    XML.NodeContent c | T.all isSpace c -> []
+    n -> [n]
 
 -- | Remove volatile attributes so they don't invalidate comparison
 removeTimeAttributes :: XML.Document -> XML.Document
