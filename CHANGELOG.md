@@ -1,6 +1,10 @@
-## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.2.1...main)
+## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.2.2...main)
 
 None
+
+## [v1.0.2.2](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.2.1...v1.0.2.2)
+
+- Add `file` and `line` attributes in `testcase` nodes
 
 ## [v1.0.2.1](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.2.0...v1.0.2.1)
 
