@@ -11,6 +11,7 @@ extra-source-files:
   - README.md
   - CHANGELOG.md
   - tests/golden.xml
+  - tests/golden-prefixed.xml
 
 category: Testing
 synopsis: A JUnit XML runner/formatter for hspec
