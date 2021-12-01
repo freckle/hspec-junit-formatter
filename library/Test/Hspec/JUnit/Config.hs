@@ -6,6 +6,7 @@ module Test.Hspec.JUnit.Config
   , setJUnitConfigOutputDirectory
   , setJUnitConfigOutputName
   , setJUnitConfigOutputFile
+  , setJUnitConfigSuiteName
   , setJUnitConfigSourcePathPrefix
 
   -- * Use
@@ -62,6 +63,9 @@ setJUnitConfigOutputName x config = config { junitConfigOutputName = x }
 --
 setJUnitConfigOutputFile :: FilePath -> JUnitConfig -> JUnitConfig
 setJUnitConfigOutputFile x config = config { junitConfigOutputFile = Just x }
+
+setJUnitConfigSuiteName :: Text -> JUnitConfig -> JUnitConfig
+setJUnitConfigSuiteName x config = config { junitConfigSuiteName = x }
 
 -- | Set a prefix to apply to source paths in the report
 --

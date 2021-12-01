@@ -14,16 +14,17 @@ import Text.Markdown.Unlit ()
 
 ```haskell
 import Test.Hspec
-import Test.Hspec.Core.Runner (defaultConfig, hspecWith)
 import Test.Hspec.JUnit
+import System.Environment (setEnv)
 
 main :: IO ()
 main = do
-  let
-    junitConfig = setJUnitConfigOutputDirectory "/tmp" $ defaultJUnitConfig "my-tests"
-    hspecConfig = configWithJUnit junitConfig defaultConfig
+  -- Most likely done in your CI setup
+  setEnv "JUNIT_ENABLED" "1"
+  setEnv "JUNIT_OUTPUT_DIRECTORY" "/tmp"
+  setEnv "JUNIT_SUITE_NAME" "my-tests"
 
-  hspecWith hspecConfig spec
+  hspecJUnit spec
 
 spec :: Spec
 spec = describe "Addition" $ do
