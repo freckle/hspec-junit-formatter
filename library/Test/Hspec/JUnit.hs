@@ -81,7 +81,8 @@ itemToTestCase
   :: (FilePath -> FilePath) -> Text -> Text -> Item -> Schema.TestCase
 itemToTestCase applyPrefix group name item = Schema.TestCase
   { testCaseLocation =
-    toSchemaLocation <$> (itemResultLocation item <|> itemLocation item)
+    toSchemaLocation applyPrefix
+      <$> (itemResultLocation item <|> itemLocation item)
   , testCaseClassName = group
   , testCaseName = name
   , testCaseDuration = unSeconds $ itemDuration item
@@ -133,9 +134,9 @@ itemResultLocation item = case itemResult item of
   Pending mLocation _ -> mLocation
   Failure mLocation _ -> mLocation
 
-toSchemaLocation :: Location -> Schema.Location
-toSchemaLocation Location {..} = Schema.Location
-  { Schema.locationFile = locationFile
+toSchemaLocation :: (FilePath -> FilePath) -> Location -> Schema.Location
+toSchemaLocation applyPrefix Location {..} = Schema.Location
+  { Schema.locationFile = applyPrefix locationFile
   , Schema.locationLine = fromIntegral $ max 0 locationLine
   }
 

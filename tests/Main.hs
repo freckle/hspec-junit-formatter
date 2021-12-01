@@ -8,7 +8,6 @@ import Prelude
 import Control.Monad (void)
 import Data.Char (isSpace)
 import qualified Data.Map.Strict as Map
-import Data.Text (Text)
 import qualified Data.Text as T
 import qualified ExampleSpec
 import System.FilePath ((</>))
@@ -26,15 +25,12 @@ main = hspec $ do
         golden <- XML.readFile XML.def "tests/golden.xml"
         normalizeDoc doc `shouldBe` normalizeDoc golden
 
-    it "can prefix source paths" $ do
+    it "matches golden file with prefixing" $ do
       let modify = setJUnitConfigSourcePathPrefix "lol/monorepo"
 
       withJUnitReportConfig modify ExampleSpec.spec $ \doc -> do
-        let
-          root = XML.documentRoot doc
-          hasPrefix = ("lol/monorepo/tests/ExampleSpec.hs" `T.isPrefixOf`)
-
-        elementInnerTexts root `shouldSatisfy` all hasPrefix
+        golden <- XML.readFile XML.def "tests/golden-prefixed.xml"
+        normalizeDoc doc `shouldBe` normalizeDoc golden
 
 withJUnitReport :: Spec -> (XML.Document -> IO ()) -> IO ()
 withJUnitReport = withJUnitReportConfig id
@@ -89,12 +85,3 @@ removeAttributesByName name doc = doc
   onNodeElement f = \case
     XML.NodeElement el -> XML.NodeElement $ f el
     n -> n
-
-elementInnerTexts :: XML.Element -> [Text]
-elementInnerTexts = concatMap go . XML.elementNodes
- where
-  go :: XML.Node -> [Text]
-  go = \case
-    XML.NodeElement el -> elementInnerTexts el
-    XML.NodeContent x -> [x]
-    _ -> []
