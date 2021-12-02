@@ -1,6 +1,11 @@
-## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.2.2...main)
+## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.3.0...main)
 
 None
+
+## [v1.0.3.0](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.2.2...v1.0.3.0)
+
+- Add `hspecJUnit` and environment-variable configuration
+- Fix `file` attribute not respecting source-path-prefix
 
 ## [v1.0.2.2](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.2.1...v1.0.2.2)
 
