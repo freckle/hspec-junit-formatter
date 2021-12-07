@@ -1,6 +1,10 @@
-## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.3.0...main)
+## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.1.0.0...main)
 
 None
+
+## [v1.1.0.0](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.3.0...v1.1.0.0)
+
+- Remove incorrectly-cased `Test.HSpec` modules
 
 ## [v1.0.3.0](https://github.com/freckle/hspec-junit-formatter/compare/v1.0.2.2...v1.0.3.0)
 
