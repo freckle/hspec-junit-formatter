@@ -21,3 +21,6 @@ jobs:
           pvp-bounds: lower
         env:
           HACKAGE_API_KEY: ${{ secrets.HACKAGE_UPLOAD_API_KEY }}
+
+          # The oldest LTS we CI against, to set the lowest lower-bounds we can
+          STACK_YAML: stack-lts-12.26.yaml
