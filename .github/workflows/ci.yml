@@ -8,6 +8,16 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        stack-yaml:
+          - stack.yaml
+          - stack-lts-16.31.yaml
+          - stack-lts-14.27.yaml
+          - stack-lts-12.26.yaml
+      fail-fast: false
+
     steps:
       - uses: actions/checkout@v2
       - uses: freckle/stack-cache-action@v1
