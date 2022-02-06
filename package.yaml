@@ -51,9 +51,10 @@ library:
     - conduit
     - containers
     - directory
-    - filepath
     - exceptions
+    - filepath
     - hspec-core >= 2.8.1
+    - iso8601-time
     - text
     - time
     - xml-conduit

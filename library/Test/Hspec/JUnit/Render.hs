@@ -9,7 +9,7 @@ import Data.Conduit (ConduitT, awaitForever, mergeSource, yield, (.|))
 import qualified Data.Conduit.List as CL
 import Data.Foldable (traverse_)
 import Data.Text (Text, pack)
-import Data.Time.Format.ISO8601 (iso8601Show)
+import Data.Time.ISO8601 (formatISO8601)
 import Data.XML.Types (Event)
 import Test.Hspec.JUnit.Schema
   (Location(..), Result(..), Suite(..), Suites(..), TestCase(..))
@@ -37,7 +37,7 @@ suite = awaitForever $ \(i, theSuite@Suite {..}) ->
       <> attr "package" suiteName
       <> attr "id" (tshow i)
       <> attr "time" (roundToStr $ sumDurations suiteCases)
-      <> attr "timestamp" (pack $ iso8601Show suiteTimestamp)
+      <> attr "timestamp" (pack $ formatISO8601 suiteTimestamp)
       <> attr "hostname" "localhost"
       <> attr "tests" (tshow $ length suiteCases)
       <> attr
