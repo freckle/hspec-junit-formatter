@@ -1,0 +1,5 @@
+resolver: lts-16.31
+extra-deps:
+  - hspec-2.8.1
+  - hspec-core-2.8.1
+  - hspec-discover-2.8.1
