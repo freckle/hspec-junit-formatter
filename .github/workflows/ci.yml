@@ -26,3 +26,12 @@ jobs:
       - uses: freckle/stack-action@v3
         with:
           stack-yaml: ${{ matrix.stack-yaml }}
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: rwe/actions-hlint-setup@v1
+      - uses: rwe/actions-hlint-run@v2
+        with:
+          fail-on: warning
