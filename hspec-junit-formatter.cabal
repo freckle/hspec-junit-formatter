@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0c3ba6094fb22e1a5547b6110c7876e93dd39014f71f493115779b7da303c3a7
+-- hash: 4551a50d9a220eea22c08cc0037a21dae933f03a9365f827e82b192b0b562369
 
 name:           hspec-junit-formatter
-version:        1.1.0.1
+version:        1.1.0.2
 synopsis:       A JUnit XML runner/formatter for hspec
 description:    Allows hspec tests to write JUnit XML output for parsing in various tools.
 category:       Testing

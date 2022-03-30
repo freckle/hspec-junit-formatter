@@ -1,6 +1,10 @@
-## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.1.0.1...main)
+## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.1.0.2...main)
 
 None
+
+## [v1.1.0.2](https://github.com/freckle/hspec-junit-formatter/compare/v1.1.0.1...v1.1.0.2)
+
+- Support GHCs 9.0 and 9.2
 
 ## [v1.1.0.1](https://github.com/freckle/hspec-junit-formatter/compare/v1.1.0.0...v1.1.0.1)
 
