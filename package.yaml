@@ -78,6 +78,5 @@ tests:
     ghc-options: -pgmL markdown-unlit
     dependencies:
       - hspec
-      - hspec-core
       - hspec-junit-formatter
       - markdown-unlit
