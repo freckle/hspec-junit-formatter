@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 module Main
   ( main
   )
@@ -22,14 +24,14 @@ main = hspec $ do
   describe "XML output" $ do
     it "matches golden file" $ do
       withJUnitReport ExampleSpec.spec $ \doc -> do
-        golden <- XML.readFile XML.def "tests/golden.xml"
+        golden <- XML.readFile XML.def goldenPath
         normalizeDoc doc `shouldBe` normalizeDoc golden
 
     it "matches golden file with prefixing" $ do
       let modify = setJUnitConfigSourcePathPrefix "lol/monorepo"
 
       withJUnitReportConfig modify ExampleSpec.spec $ \doc -> do
-        golden <- XML.readFile XML.def "tests/golden-prefixed.xml"
+        golden <- XML.readFile XML.def goldenPrefixedPath
         normalizeDoc doc `shouldBe` normalizeDoc golden
 
 withJUnitReport :: Spec -> (XML.Document -> IO ()) -> IO ()
@@ -85,3 +87,24 @@ removeAttributesByName name doc = doc
   onNodeElement f = \case
     XML.NodeElement el -> XML.NodeElement $ f el
     n -> n
+
+-- GHC 9 changes the bounds of the SrcLoc from HasCallStack, which changes the
+-- line numbers reported by Hspec. Fun.
+--
+-- True `shouldBe` False
+-- ^ -- Before GHC 9 reports from here (18:7 in golden.xml)
+--
+-- True `shouldBe` False
+--      ^-- GHC 9 reports from here (18:12 in golden-ghc-9.xml)
+--
+-- We should really re-consider the golden testing approach. If we were instead
+-- asserting on parsed XML, we'd have a lot more options here.
+--
+goldenPath, goldenPrefixedPath :: FilePath
+#if __GLASGOW_HASKELL__ >= 900
+goldenPath = "tests/golden-ghc-9.xml"
+goldenPrefixedPath = "tests/golden-prefixed-ghc-9.xml"
+#else
+goldenPath = "tests/golden.xml"
+goldenPrefixedPath = "tests/golden-prefixed.xml"
+#endif
