@@ -54,6 +54,7 @@ library:
     - exceptions
     - filepath
     - hspec-core >= 2.8.1
+    - hspec-api >= 2.10 && < 3
     - iso8601-time
     - text
     - time
