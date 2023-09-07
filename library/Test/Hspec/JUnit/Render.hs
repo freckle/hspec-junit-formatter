@@ -5,15 +5,19 @@ module Test.Hspec.JUnit.Render
 import Prelude
 
 import Control.Monad.Catch (MonadThrow)
+import qualified Data.Array as Array
 import Data.Conduit (ConduitT, awaitForever, mergeSource, yield, (.|))
 import qualified Data.Conduit.List as CL
 import Data.Foldable (traverse_)
 import Data.Text (Text, pack)
+import qualified Data.Text as Text
 import Data.Time.ISO8601 (formatISO8601)
 import Data.XML.Types (Event)
 import Test.Hspec.JUnit.Schema
   (Location(..), Result(..), Suite(..), Suites(..), TestCase(..))
 import Text.Printf
+import qualified Text.Regex.Base as Regex
+import qualified Text.Regex.TDFA.Text as Regex
 import Text.XML.Stream.Render (attr, content, tag)
 
 renderJUnit :: MonadThrow m => ConduitT Suites Event m ()
@@ -73,8 +77,21 @@ result :: MonadThrow m => ConduitT Result Event m ()
 result = awaitForever go
  where
   go (Failure fType contents) =
-    tag "failure" (attr "type" fType) $ content contents
-  go (Skipped contents) = tag "skipped" mempty $ content contents
+    tag "failure" (attr "type" fType) $ content $ dropConsoleFormatting contents
+  go (Skipped contents) = tag "skipped" mempty $ content $ dropConsoleFormatting contents
+
+  -- Drops ANSI control characters which might be used to set colors.
+  -- Including these breaks XML, there is not much point encoding them.
+  dropConsoleFormatting :: Text -> Text
+  dropConsoleFormatting input =
+    let regex = Regex.makeRegex (pack "\x1b\\[[0-9;]*[mGKHF]") :: Regex.Regex
+        matches = Regex.matchAll regex input
+        dropMatch (offset, len) input' =
+          let (begining, rest) = Text.splitAt offset input'
+              (_, end) = Text.splitAt len rest
+          in begining <> end
+        matchTuples = map (Array.! 0) matches
+    in foldr dropMatch input matchTuples
 
 sumDurations :: [TestCase] -> Double
 sumDurations cases = sum $ testCaseDuration <$> cases

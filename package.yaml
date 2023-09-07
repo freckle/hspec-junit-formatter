@@ -47,6 +47,7 @@ default-extensions:
 library:
   source-dirs: library
   dependencies:
+    - array
     - conduit
     - containers
     - directory
@@ -54,6 +55,8 @@ library:
     - filepath
     - hspec-core >= 2.8.1
     - iso8601-time
+    - regex-base
+    - regex-tdfa
     - text
     - time
     - xml-conduit
