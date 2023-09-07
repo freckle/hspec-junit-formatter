@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.35.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4551a50d9a220eea22c08cc0037a21dae933f03a9365f827e82b192b0b562369
+-- hash: 9b45343fdd935eeda31250fd2c6d69dfeb98841cb8ea89c23841ff7612e35b74
 
 name:           hspec-junit-formatter
 version:        1.1.0.2
@@ -22,8 +22,10 @@ build-type:     Simple
 extra-source-files:
     README.md
     CHANGELOG.md
-    tests/golden.xml
+    tests/golden-ghc-9.xml
+    tests/golden-prefixed-ghc-9.xml
     tests/golden-prefixed.xml
+    tests/golden.xml
 
 source-repository head
   type: git
