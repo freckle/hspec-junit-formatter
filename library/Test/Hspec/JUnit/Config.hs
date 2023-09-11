@@ -8,11 +8,13 @@ module Test.Hspec.JUnit.Config
   , setJUnitConfigOutputFile
   , setJUnitConfigSuiteName
   , setJUnitConfigSourcePathPrefix
+  , setJUnitConfigDropConsoleFormatting
 
   -- * Use
   , getJUnitConfigOutputFile
   , getJUnitConfigSuiteName
   , getJUnitPrefixSourcePath
+  , getJUnitConfigDropConsoleFormatting
   ) where
 
 import Prelude
@@ -27,6 +29,7 @@ data JUnitConfig = JUnitConfig
   , junitConfigOutputFile :: Maybe FilePath
   , junitConfigSuiteName :: Text
   , junitConfigSourcePathPrefix :: Maybe FilePath
+  , junitConfigDropConsoleFormatting :: Bool
   }
 
 -- | Construct a 'JUnitConfig' given a suite name
@@ -40,6 +43,7 @@ defaultJUnitConfig name = JUnitConfig
   , junitConfigOutputFile = Nothing
   , junitConfigSuiteName = name
   , junitConfigSourcePathPrefix = Nothing
+  , junitConfigDropConsoleFormatting = False
   }
 
 -- | Set the directory within which to generate the report
@@ -77,6 +81,14 @@ setJUnitConfigSourcePathPrefix :: FilePath -> JUnitConfig -> JUnitConfig
 setJUnitConfigSourcePathPrefix x config =
   config { junitConfigSourcePathPrefix = Just x }
 
+-- | Set whether console formatting characters should be dropped from failure
+-- reports.
+--
+-- Default is False. Most XML processors will fail to parse the XML if it
+-- contains the ANSI control characters used by console formatting.
+setJUnitConfigDropConsoleFormatting :: Bool -> JUnitConfig -> JUnitConfig
+setJUnitConfigDropConsoleFormatting x config = config { junitConfigDropConsoleFormatting = x }
+
 -- | Retrieve the full path to the generated report
 getJUnitConfigOutputFile :: JUnitConfig -> FilePath
 getJUnitConfigOutputFile JUnitConfig {..} = fromMaybe
@@ -94,3 +106,8 @@ getJUnitConfigSuiteName = junitConfigSuiteName
 getJUnitPrefixSourcePath :: JUnitConfig -> FilePath -> FilePath
 getJUnitPrefixSourcePath JUnitConfig {..} =
   maybe id (</>) junitConfigSourcePathPrefix
+
+-- | Retrieve whether console formatting characters should be dropped from
+-- failure reports.
+getJUnitConfigDropConsoleFormatting :: JUnitConfig -> Bool
+getJUnitConfigDropConsoleFormatting JUnitConfig {..} = junitConfigDropConsoleFormatting

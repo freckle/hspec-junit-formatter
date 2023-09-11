@@ -111,13 +111,14 @@ junitFormat junitConfig _config = pure $ \case
 
     runConduitRes
       $ sourceList [output]
-      .| renderJUnit
+      .| renderJUnit dropConsoleFormatting
       .| renderBytes def
       .| sinkFile file
  where
   file = getJUnitConfigOutputFile junitConfig
   suiteName = getJUnitConfigSuiteName junitConfig
   applyPrefix = getJUnitPrefixSourcePath junitConfig
+  dropConsoleFormatting = getJUnitConfigDropConsoleFormatting junitConfig
 
 groupItems :: [(Path, Item)] -> [(Text, [(Text, Item)])]
 groupItems = Map.toList . Map.fromListWith (<>) . fmap group
