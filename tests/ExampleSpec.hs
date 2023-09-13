@@ -5,6 +5,7 @@
 --
 module ExampleSpec (spec) where
 
+import Control.Exception
 import Prelude
 
 import Test.Hspec
@@ -24,3 +25,11 @@ spec = do
         True `shouldBe` True
       it "gets skipped" $ do
         pendingWith "some reason"
+      it "throws a colourful exception" $ do
+        throwIO ColourfulException :: IO ()
+
+data ColourfulException = ColourfulException
+  deriving stock Show
+
+instance Exception ColourfulException where
+  displayException _ =  "\x1b[32mColour\x1b[31mful\x1b[0mException"
