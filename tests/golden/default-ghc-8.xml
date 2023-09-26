@@ -14,7 +14,7 @@
       name="has a failure"
       classname="Some section"
       time="0.000015537">
-      <failure type="error">tests/ExampleSpec.hs:19:12
+      <failure type="error">tests/ExampleSpec.hs:19:7
 
 expected: &#34;False&#34;
  but got: &#34;True&#34;
