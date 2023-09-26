@@ -3,6 +3,7 @@ extra-deps:
   - hspec-2.8.1
   - hspec-core-2.8.1
   - hspec-discover-2.8.1
+  - hspec-golden-0.2.1.0
 
   - QuickCheck-2.14.2@sha256:4ce29211223d5e6620ebceba34a3ca9ccf1c10c0cf387d48aea45599222ee5aa,7736
   - random-1.2.1@sha256:8bee24dc0c985a90ee78d94c61f8aed21c49633686f0f1c14c5078d818ee43a2,6598
