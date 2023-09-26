@@ -95,7 +95,7 @@ removeAttributesByName name doc =
 -- line numbers reported by Hspec. Fun.
 --
 -- True `shouldBe` False
--- ^ -- Before GHC 9 reports from here (18:7 in golden.xml)
+-- \^ -- Before GHC 9 reports from here (18:7 in golden.xml)
 --
 -- True `shouldBe` False
 --      ^-- GHC 9 reports from here (18:12 in golden-ghc-9.xml)
