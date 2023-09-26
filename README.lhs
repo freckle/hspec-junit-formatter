@@ -37,6 +37,21 @@ spec = describe "Addition" $ do
     2 + 2 `shouldBe` (4 :: Int)
 ```
 
+## Golden Testing
+
+This project's test suite uses [hspec-golden][] to generate an XML report for
+[`ExampleSpec.hs`](./tests/ExampleSpec.hs) and then compare that with golden XML
+files checked into the repository. If your work changes things in a
+functionally-correct way, but that diverges from the golden XML files, you need
+to regenerate them.
+
+1. Run `rm tests/golden*.xml`
+2. Run the specs again
+
+We maintain specific golden XML files for GHC 8.x vs 9.x, so you will need to
+re-run the test suite with at least one of each series to regenerate all the
+necessary files.
+
 ---
 
 [LICENSE](./LICENSE)
