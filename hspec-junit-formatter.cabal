@@ -18,10 +18,10 @@ license:        MIT
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
-    tests/golden-ghc-9.xml
-    tests/golden-prefixed-ghc-9.xml
-    tests/golden-prefixed.xml
-    tests/golden.xml
+    tests/golden/default-ghc-8.xml
+    tests/golden/default-ghc-9.xml
+    tests/golden/prefixed-ghc-8.xml
+    tests/golden/prefixed-ghc-9.xml
 extra-doc-files:
     README.md
     CHANGELOG.md

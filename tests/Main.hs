@@ -23,20 +23,21 @@ import qualified Text.XML as XML
 main :: IO ()
 main = hspec $ do
   describe "XML output" $ do
-    it "matches golden file" $ junitGolden Nothing id
+    it "matches golden file" $
+      junitGolden "default" id
 
     it "matches golden file with prefixing" $
-      junitGolden (Just "prefixed") $
+      junitGolden "prefixed" $
         setJUnitConfigSourcePathPrefix "lol/monorepo"
 
 -- | Run @ExampleSpec.spec@ and compare XML to a golden file
 junitGolden
-  :: Maybe String
-  -- ^ Optional name
+  :: String
+  -- ^ Unique name
   -> (JUnitConfig -> JUnitConfig)
   -- ^ Any modification to make to the 'JUnitConfig' before running
   -> IO (Golden XML.Document)
-junitGolden mName modifyConfig = do
+junitGolden name modifyConfig = do
   actual <- withSystemTempDirectory "" $ \tmp -> do
     let junitConfig =
           modifyConfig $
@@ -54,11 +55,7 @@ junitGolden mName modifyConfig = do
       , writeToFile = XML.writeFile XML.def
       , readFromFile = readNormalizedXML
       , goldenFile =
-          "tests"
-            </> "golden"
-              <> maybe "" ("-" <>) mName
-              <> maybe "" ("-" <>) mGHC
-                <.> "xml"
+          "tests" </> "golden" </> name <> "-" <> ghcSuffix <.> "xml"
       , actualFile = Nothing
       , failFirstTime = False
       }
@@ -107,9 +104,11 @@ removeAttributesByName name doc =
 
 -- GHC can change certain aspects, mainly about source-location, so we can
 -- incorpate that by tracking separate Golden files as necessary
-mGHC :: Maybe String
+ghcSuffix :: String
 #if __GLASGOW_HASKELL__ >= 900
-mGHC = Just "ghc-9"
+ghcSuffix = "ghc-9"
+#elif __GLASGOW_HASKELL__ >= 800
+ghcSuffix = "ghc-8"
 #else
-mGHC = Nothing
+-- Fail to compile on other GHCs
 #endif

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?><testsuites name="hspec-junit-format"><testsuite errors="0" failures="1" hostname="localhost" id="0" name="Some section" package="Some section" skipped="0" tests="2"><properties/><testcase classname="Some section" file="tests/ExampleSpec.hs" line="19" name="has a failure"><failure type="error">tests/ExampleSpec.hs:19:12
+
+expected: "False"
+ but got: "True"
+</failure></testcase><testcase classname="Some section" file="tests/ExampleSpec.hs" line="16" name="has an expectation"/></testsuite><testsuite errors="0" failures="1" hostname="localhost" id="1" name="Some section/A grouped context" package="Some section/A grouped context" skipped="1" tests="4"><properties/><testcase classname="Some section/A grouped context" file="tests/ExampleSpec.hs" line="28" name="throws a colourful exception"><failure type="error">ColourfulException</failure></testcase><testcase classname="Some section/A grouped context" file="tests/ExampleSpec.hs" line="27" name="gets skipped"><skipped>tests/ExampleSpec.hs:27:9
+some reason</skipped></testcase><testcase classname="Some section/A grouped context" file="tests/ExampleSpec.hs" line="24" name="also happens in a group"/><testcase classname="Some section/A grouped context" file="tests/ExampleSpec.hs" line="22" name="happens in a group"/></testsuite></testsuites>
