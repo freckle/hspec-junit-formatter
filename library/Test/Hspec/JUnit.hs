@@ -31,8 +31,18 @@ import Data.Time (getCurrentTime)
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath (splitFileName)
 import Test.Hspec.Core.Format
-import Test.Hspec.Core.Runner
-import Test.Hspec.Core.Runner.Ext
+  ( Event (..)
+  , FailureReason (..)
+  , Format
+  , FormatConfig
+  , Item (..)
+  , Location (..)
+  , Path
+  , Result (..)
+  , Seconds (..)
+  )
+import Test.Hspec.Core.Runner (Config (..), defaultConfig, hspecWith)
+import Test.Hspec.Core.Runner.Ext (configAddAvailableFormatter)
 import Test.Hspec.Core.Spec (Spec)
 import Test.Hspec.JUnit.Config
 import Test.Hspec.JUnit.Config.Env
@@ -129,38 +139,32 @@ groupItems = Map.toList . Map.fromListWith (<>) . fmap group
 
 itemToTestCase
   :: (FilePath -> FilePath) -> Text -> Text -> Item -> Schema.TestCase
-itemToTestCase applyPrefix group name item = Schema.TestCase
-  { testCaseLocation =
-    toSchemaLocation applyPrefix
-      <$> (itemResultLocation item <|> itemLocation item)
-  , testCaseClassName = group
-  , testCaseName = name
-  , testCaseDuration = unSeconds $ itemDuration item
-  , testCaseResult = case itemResult item of
-    Success -> Nothing
-    Pending mLocation mMessage ->
-      Just $ Schema.Skipped $ prefixLocation mLocation $ prefixInfo $ maybe
-        ""
-        pack
-        mMessage
-    Failure mLocation reason ->
-      Just
-        $ Schema.Failure "error"
-        $ prefixLocation mLocation
-        $ prefixInfo
-        $ case reason of
-            Error _ err -> pack $ show err
-            NoReason -> "no reason"
-            Reason err -> pack err
-            ExpectedButGot preface expected actual ->
-              prefixInfo
-                $ T.unlines
-                $ pack
-                <$> fromMaybe "" preface
-                : (foundLines "expected" expected
-                  <> foundLines " but got" actual
-                  )
-  }
+itemToTestCase applyPrefix group name item =
+  Schema.TestCase
+    { testCaseLocation =
+        toSchemaLocation applyPrefix
+          <$> (itemResultLocation item <|> itemLocation item)
+    , testCaseClassName = group
+    , testCaseName = name
+    , testCaseDuration = unSeconds $ itemDuration item
+    , testCaseResult = case itemResult item of
+        Success -> Nothing
+        Pending mLocation mMessage ->
+          Just $
+            Schema.Skipped $
+              prefixLocation mLocation $
+                prefixInfo $
+                  maybe
+                    ""
+                    pack
+                    mMessage
+        Failure mLocation reason ->
+          Just $
+            Schema.Failure "error" $
+              prefixLocation mLocation $
+                prefixInfo $
+                  reasonToText reason
+    }
  where
   prefixLocation mLocation str = case mLocation of
     Nothing -> str
@@ -201,3 +205,21 @@ foundLines msg found = case lines' of
     unpack (msg <> ": " <> first) : (unpack . (T.replicate 9 " " <>) <$> rest)
  where
   lines' = T.lines . pack $ show found
+
+{- FOURMOLU_DISABLE -}
+reasonToText :: FailureReason -> Text
+reasonToText = \case
+  Error _ err -> pack $ show err
+  NoReason -> "no reason"
+  Reason err -> pack err
+#if MIN_VERSION_hspec_core(2,11,0)
+  ColorizedReason err -> pack err
+#endif
+  ExpectedButGot preface expected actual ->
+    T.unlines
+      $ pack
+      <$> fromMaybe "" preface
+      : (foundLines "expected" expected
+        <> foundLines " but got" actual
+        )
+{- FOURMOLU_ENABLE -}
