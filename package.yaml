@@ -97,6 +97,7 @@ tests:
       - containers
       - filepath
       - hspec
+      - hspec-golden
       - hspec-junit-formatter
       - temporary
       - text

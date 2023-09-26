@@ -12,9 +12,10 @@ import Data.Char (isSpace)
 import qualified Data.Map.Strict as Map
 import qualified Data.Text as T
 import qualified ExampleSpec
-import System.FilePath ((</>))
+import System.FilePath ((<.>), (</>))
 import System.IO.Temp (withSystemTempDirectory)
 import Test.Hspec
+import Test.Hspec.Golden
 import Test.Hspec.JUnit
 import Test.Hspec.Runner
 import qualified Text.XML as XML
@@ -22,35 +23,48 @@ import qualified Text.XML as XML
 main :: IO ()
 main = hspec $ do
   describe "XML output" $ do
-    it "matches golden file" $ do
-      withJUnitReport ExampleSpec.spec $ \doc -> do
-        golden <- XML.readFile XML.def goldenPath
-        normalizeDoc doc `shouldBe` normalizeDoc golden
+    it "matches golden file" $ junitGolden Nothing id
 
-    it "matches golden file with prefixing" $ do
-      let modify = setJUnitConfigSourcePathPrefix "lol/monorepo"
+    it "matches golden file with prefixing" $
+      junitGolden (Just "prefixed") $
+        setJUnitConfigSourcePathPrefix "lol/monorepo"
 
-      withJUnitReportConfig modify ExampleSpec.spec $ \doc -> do
-        golden <- XML.readFile XML.def goldenPrefixedPath
-        normalizeDoc doc `shouldBe` normalizeDoc golden
+-- | Run @ExampleSpec.spec@ and compare XML to a golden file
+junitGolden
+  :: Maybe String
+  -- ^ Optional name
+  -> (JUnitConfig -> JUnitConfig)
+  -- ^ Any modification to make to the 'JUnitConfig' before running
+  -> IO (Golden XML.Document)
+junitGolden mName modifyConfig = do
+  actual <- withSystemTempDirectory "" $ \tmp -> do
+    let junitConfig =
+          modifyConfig $
+            setJUnitConfigOutputDirectory tmp $
+              setJUnitConfigOutputName "test.xml" $
+                defaultJUnitConfig "hspec-junit-format"
 
-withJUnitReport :: Spec -> (XML.Document -> IO ()) -> IO ()
-withJUnitReport = withJUnitReportConfig id
+    void $ runSpec ExampleSpec.spec $ configWithJUnit junitConfig defaultConfig
+    readNormalizedXML $ tmp </> "test.xml"
 
-withJUnitReportConfig
-  :: (JUnitConfig -> JUnitConfig) -> Spec -> (XML.Document -> IO ()) -> IO ()
-withJUnitReportConfig modifyConfig spec f =
-  withSystemTempDirectory "" $ \tmp -> do
-    let
-      path = tmp </> "test.xml"
-      junitConfig =
-        modifyConfig $
-          setJUnitConfigOutputDirectory tmp $
-            setJUnitConfigOutputName "test.xml" $
-              defaultJUnitConfig "hspec-junit-format"
-      hspecConfig = configWithJUnit junitConfig defaultConfig
-    void $ runSpec spec hspecConfig
-    f =<< XML.readFile XML.def path
+  pure
+    Golden
+      { output = actual
+      , encodePretty = show
+      , writeToFile = XML.writeFile XML.def
+      , readFromFile = readNormalizedXML
+      , goldenFile =
+          "tests"
+            </> "golden"
+              <> maybe "" ("-" <>) mName
+              <> maybe "" ("-" <>) mGHC
+                <.> "xml"
+      , actualFile = Nothing
+      , failFirstTime = False
+      }
+
+readNormalizedXML :: FilePath -> IO XML.Document
+readNormalizedXML = fmap normalizeDoc . XML.readFile XML.def
 
 normalizeDoc :: XML.Document -> XML.Document
 normalizeDoc = removeWhitespaceNodes . removeTimeAttributes
@@ -91,23 +105,11 @@ removeAttributesByName name doc =
     XML.NodeElement el -> XML.NodeElement $ f el
     n -> n
 
--- GHC 9 changes the bounds of the SrcLoc from HasCallStack, which changes the
--- line numbers reported by Hspec. Fun.
---
--- True `shouldBe` False
--- \^ -- Before GHC 9 reports from here (18:7 in golden.xml)
---
--- True `shouldBe` False
---      ^-- GHC 9 reports from here (18:12 in golden-ghc-9.xml)
---
--- We should really re-consider the golden testing approach. If we were instead
--- asserting on parsed XML, we'd have a lot more options here.
-
-goldenPath, goldenPrefixedPath :: FilePath
+-- GHC can change certain aspects, mainly about source-location, so we can
+-- incorpate that by tracking separate Golden files as necessary
+mGHC :: Maybe String
 #if __GLASGOW_HASKELL__ >= 900
-goldenPath = "tests/golden-ghc-9.xml"
-goldenPrefixedPath = "tests/golden-prefixed-ghc-9.xml"
+mGHC = Just "ghc-9"
 #else
-goldenPath = "tests/golden.xml"
-goldenPrefixedPath = "tests/golden-prefixed.xml"
+mGHC = Nothing
 #endif
