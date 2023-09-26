@@ -1,17 +1,18 @@
+{-# LANGUAGE CPP #-}
+
 module Test.Hspec.JUnit
-  (
-  -- * Runners
+  ( -- * Runners
     hspecJUnit
   , hspecJUnitWith
 
-  -- * Directly modifying 'Config'
+    -- * Directly modifying 'Config'
   , configWithJUnit
   , configWithJUnitAvailable
 
-  -- * Actual format function
+    -- * Actual format function
   , junitFormat
 
-  -- * Configuration
+    -- * Configuration
   , module Test.Hspec.JUnit.Config
   ) where
 
@@ -30,8 +31,18 @@ import Data.Time (getCurrentTime)
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath (splitFileName)
 import Test.Hspec.Core.Format
-import Test.Hspec.Core.Runner
-import Test.Hspec.Core.Runner.Ext
+  ( Event (..)
+  , FailureReason (..)
+  , Format
+  , FormatConfig
+  , Item (..)
+  , Location (..)
+  , Path
+  , Result (..)
+  , Seconds (..)
+  )
+import Test.Hspec.Core.Runner (Config (..), defaultConfig, hspecWith)
+import Test.Hspec.Core.Runner.Ext (configAddAvailableFormatter)
 import Test.Hspec.Core.Spec (Spec)
 import Test.Hspec.JUnit.Config
 import Test.Hspec.JUnit.Config.Env
@@ -50,7 +61,6 @@ import Text.XML.Stream.Render (def, renderBytes)
 -- All configuration of the JUnit report occurs through environment variables.
 --
 -- See "Test.Hspec.JUnit.Config" and "Test.Hspec.JUnit.Config.Env".
---
 hspecJUnit :: Spec -> IO ()
 hspecJUnit = hspecJUnitWith defaultConfig
 
@@ -69,14 +79,13 @@ hspecJUnitWith config spec = do
 -- | Modify an Hspec 'Config' to use 'junitFormat'
 configWithJUnit :: JUnitConfig -> Config -> Config
 configWithJUnit junitConfig config =
-  config { configFormat = Just $ junitFormat junitConfig }
+  config {configFormat = Just $ junitFormat junitConfig}
 
 -- | Modify an Hspec 'Config' to have the 'junitFormat' /available/
 --
 -- Adds @junit@ to the list of available options for @-f, --format@.
 --
 -- __NOTE__: This only works with hspec >= 2.9, otherwise it is a no-op.
---
 configWithJUnitAvailable :: JUnitConfig -> Config -> Config
 configWithJUnitAvailable = configAddAvailableFormatter "junit" . junitFormat
 
@@ -97,23 +106,25 @@ junitFormat junitConfig _config = pure $ \case
 
     let
       groups = groupItems paths
-      output = Schema.Suites
-        { suitesName = suiteName
-        , suitesSuites = groups <&> \(group, items) -> do
-          let
-            suite xs = Schema.Suite
-              { suiteName = group
-              , suiteTimestamp = time
-              , suiteCases = xs
-              }
-          suite $ uncurry (itemToTestCase applyPrefix group) <$> items
-        }
+      output =
+        Schema.Suites
+          { suitesName = suiteName
+          , suitesSuites =
+              groups <&> \(group, items) -> do
+                let suite xs =
+                      Schema.Suite
+                        { suiteName = group
+                        , suiteTimestamp = time
+                        , suiteCases = xs
+                        }
+                suite $ uncurry (itemToTestCase applyPrefix group) <$> items
+          }
 
-    runConduitRes
-      $ sourceList [output]
-      .| renderJUnit dropConsoleFormatting
-      .| renderBytes def
-      .| sinkFile file
+    runConduitRes $
+      sourceList [output]
+        .| renderJUnit dropConsoleFormatting
+        .| renderBytes def
+        .| sinkFile file
  where
   file = getJUnitConfigOutputFile junitConfig
   suiteName = getJUnitConfigSuiteName junitConfig
@@ -128,50 +139,44 @@ groupItems = Map.toList . Map.fromListWith (<>) . fmap group
 
 itemToTestCase
   :: (FilePath -> FilePath) -> Text -> Text -> Item -> Schema.TestCase
-itemToTestCase applyPrefix group name item = Schema.TestCase
-  { testCaseLocation =
-    toSchemaLocation applyPrefix
-      <$> (itemResultLocation item <|> itemLocation item)
-  , testCaseClassName = group
-  , testCaseName = name
-  , testCaseDuration = unSeconds $ itemDuration item
-  , testCaseResult = case itemResult item of
-    Success -> Nothing
-    Pending mLocation mMessage ->
-      Just $ Schema.Skipped $ prefixLocation mLocation $ prefixInfo $ maybe
-        ""
-        pack
-        mMessage
-    Failure mLocation reason ->
-      Just
-        $ Schema.Failure "error"
-        $ prefixLocation mLocation
-        $ prefixInfo
-        $ case reason of
-            Error _ err -> pack $ show err
-            NoReason -> "no reason"
-            Reason err -> pack err
-            ExpectedButGot preface expected actual ->
-              prefixInfo
-                $ T.unlines
-                $ pack
-                <$> fromMaybe "" preface
-                : (foundLines "expected" expected
-                  <> foundLines " but got" actual
-                  )
-  }
+itemToTestCase applyPrefix group name item =
+  Schema.TestCase
+    { testCaseLocation =
+        toSchemaLocation applyPrefix
+          <$> (itemResultLocation item <|> itemLocation item)
+    , testCaseClassName = group
+    , testCaseName = name
+    , testCaseDuration = unSeconds $ itemDuration item
+    , testCaseResult = case itemResult item of
+        Success -> Nothing
+        Pending mLocation mMessage ->
+          Just $
+            Schema.Skipped $
+              prefixLocation mLocation $
+                prefixInfo $
+                  maybe
+                    ""
+                    pack
+                    mMessage
+        Failure mLocation reason ->
+          Just $
+            Schema.Failure "error" $
+              prefixLocation mLocation $
+                prefixInfo $
+                  reasonToText reason
+    }
  where
   prefixLocation mLocation str = case mLocation of
     Nothing -> str
     Just Location {..} ->
       mconcat
-          [ pack $ applyPrefix locationFile
-          , ":"
-          , pack $ show locationLine
-          , ":"
-          , pack $ show locationColumn
-          , "\n"
-          ]
+        [ pack $ applyPrefix locationFile
+        , ":"
+        , pack $ show locationLine
+        , ":"
+        , pack $ show locationColumn
+        , "\n"
+        ]
         <> str
   prefixInfo str
     | T.null $ T.strip $ pack $ itemInfo item = str
@@ -184,10 +189,11 @@ itemResultLocation item = case itemResult item of
   Failure mLocation _ -> mLocation
 
 toSchemaLocation :: (FilePath -> FilePath) -> Location -> Schema.Location
-toSchemaLocation applyPrefix Location {..} = Schema.Location
-  { Schema.locationFile = applyPrefix locationFile
-  , Schema.locationLine = fromIntegral $ max 0 locationLine
-  }
+toSchemaLocation applyPrefix Location {..} =
+  Schema.Location
+    { Schema.locationFile = applyPrefix locationFile
+    , Schema.locationLine = fromIntegral $ max 0 locationLine
+    }
 
 unSeconds :: Seconds -> Double
 unSeconds (Seconds x) = x
@@ -197,4 +203,23 @@ foundLines msg found = case lines' of
   [] -> []
   first : rest ->
     unpack (msg <> ": " <> first) : (unpack . (T.replicate 9 " " <>) <$> rest)
-  where lines' = T.lines . pack $ show found
+ where
+  lines' = T.lines . pack $ show found
+
+{- FOURMOLU_DISABLE -}
+reasonToText :: FailureReason -> Text
+reasonToText = \case
+  Error _ err -> pack $ show err
+  NoReason -> "no reason"
+  Reason err -> pack err
+#if MIN_VERSION_hspec_core(2,11,0)
+  ColorizedReason err -> pack err
+#endif
+  ExpectedButGot preface expected actual ->
+    T.unlines
+      $ pack
+      <$> fromMaybe "" preface
+      : (foundLines "expected" expected
+        <> foundLines " but got" actual
+        )
+{- FOURMOLU_ENABLE -}

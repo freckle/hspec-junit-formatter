@@ -1,7 +1,7 @@
 module Test.Hspec.JUnit.Config
   ( JUnitConfig
 
-  -- * Construction
+    -- * Construction
   , defaultJUnitConfig
   , setJUnitConfigOutputDirectory
   , setJUnitConfigOutputName
@@ -10,7 +10,7 @@ module Test.Hspec.JUnit.Config
   , setJUnitConfigSourcePathPrefix
   , setJUnitConfigDropConsoleFormatting
 
-  -- * Use
+    -- * Use
   , getJUnitConfigOutputFile
   , getJUnitConfigSuiteName
   , getJUnitPrefixSourcePath
@@ -35,51 +35,47 @@ data JUnitConfig = JUnitConfig
 -- | Construct a 'JUnitConfig' given a suite name
 --
 -- See individual set functions for defaults.
---
 defaultJUnitConfig :: Text -> JUnitConfig
-defaultJUnitConfig name = JUnitConfig
-  { junitConfigOutputDirectory = "."
-  , junitConfigOutputName = "junit.xml"
-  , junitConfigOutputFile = Nothing
-  , junitConfigSuiteName = name
-  , junitConfigSourcePathPrefix = Nothing
-  , junitConfigDropConsoleFormatting = False
-  }
+defaultJUnitConfig name =
+  JUnitConfig
+    { junitConfigOutputDirectory = "."
+    , junitConfigOutputName = "junit.xml"
+    , junitConfigOutputFile = Nothing
+    , junitConfigSuiteName = name
+    , junitConfigSourcePathPrefix = Nothing
+    , junitConfigDropConsoleFormatting = False
+    }
 
 -- | Set the directory within which to generate the report
 --
 -- Default is current working directory.
---
 setJUnitConfigOutputDirectory :: FilePath -> JUnitConfig -> JUnitConfig
 setJUnitConfigOutputDirectory x config =
-  config { junitConfigOutputDirectory = x }
+  config {junitConfigOutputDirectory = x}
 
 -- | Set the name for the generated report
 --
 -- Default is @junit.xml@.
---
 setJUnitConfigOutputName :: FilePath -> JUnitConfig -> JUnitConfig
-setJUnitConfigOutputName x config = config { junitConfigOutputName = x }
+setJUnitConfigOutputName x config = config {junitConfigOutputName = x}
 
 -- | Set the full path to the generated report
 --
 -- If given, the directory and name configurations are ignored.
---
 setJUnitConfigOutputFile :: FilePath -> JUnitConfig -> JUnitConfig
-setJUnitConfigOutputFile x config = config { junitConfigOutputFile = Just x }
+setJUnitConfigOutputFile x config = config {junitConfigOutputFile = Just x}
 
 setJUnitConfigSuiteName :: Text -> JUnitConfig -> JUnitConfig
-setJUnitConfigSuiteName x config = config { junitConfigSuiteName = x }
+setJUnitConfigSuiteName x config = config {junitConfigSuiteName = x}
 
 -- | Set a prefix to apply to source paths in the report
 --
 -- Default is none. This can be required if you run specs from a sub-directory
 -- in a monorepository, and you need reported paths to be from the repository
 -- root.
---
 setJUnitConfigSourcePathPrefix :: FilePath -> JUnitConfig -> JUnitConfig
 setJUnitConfigSourcePathPrefix x config =
-  config { junitConfigSourcePathPrefix = Just x }
+  config {junitConfigSourcePathPrefix = Just x}
 
 -- | Set whether console formatting characters should be dropped from failure
 -- reports.
@@ -87,13 +83,14 @@ setJUnitConfigSourcePathPrefix x config =
 -- Default is False. Most XML processors will fail to parse the XML if it
 -- contains the ANSI control characters used by console formatting.
 setJUnitConfigDropConsoleFormatting :: Bool -> JUnitConfig -> JUnitConfig
-setJUnitConfigDropConsoleFormatting x config = config { junitConfigDropConsoleFormatting = x }
+setJUnitConfigDropConsoleFormatting x config = config {junitConfigDropConsoleFormatting = x}
 
 -- | Retrieve the full path to the generated report
 getJUnitConfigOutputFile :: JUnitConfig -> FilePath
-getJUnitConfigOutputFile JUnitConfig {..} = fromMaybe
-  (junitConfigOutputDirectory </> junitConfigOutputName)
-  junitConfigOutputFile
+getJUnitConfigOutputFile JUnitConfig {..} =
+  fromMaybe
+    (junitConfigOutputDirectory </> junitConfigOutputName)
+    junitConfigOutputFile
 
 -- | Retrieve the suite name given on construction
 getJUnitConfigSuiteName :: JUnitConfig -> Text
@@ -102,7 +99,6 @@ getJUnitConfigSuiteName = junitConfigSuiteName
 -- | Retrieve the function to apply to reported source paths
 --
 -- Will be 'id' if no prefix configured.
---
 getJUnitPrefixSourcePath :: JUnitConfig -> FilePath -> FilePath
 getJUnitPrefixSourcePath JUnitConfig {..} =
   maybe id (</>) junitConfigSourcePathPrefix

@@ -5,7 +5,6 @@
 -- This feature is only available in hspec >= 2.9. Note that this module doesn't
 -- do anything to backport the feature; it just supplies a function that will
 -- use it when possible and safely no-op when not.
---
 module Test.Hspec.Core.Runner.Ext
   ( configAddAvailableFormatter
   ) where
@@ -13,7 +12,7 @@ module Test.Hspec.Core.Runner.Ext
 import Prelude
 
 import Test.Hspec.Core.Format (Format, FormatConfig)
-import Test.Hspec.Core.Runner (Config(..))
+import Test.Hspec.Core.Runner (Config (..))
 
 configAddAvailableFormatter
   :: String -> (FormatConfig -> IO Format) -> Config -> Config

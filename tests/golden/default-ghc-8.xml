@@ -42,7 +42,7 @@ expected: &#34;False&#34;
       name="throws a colourful exception"
       classname="Some section/A grouped context"
       time="0.000012194">
-        <failure type="error">ColourfulException</failure>
+      <failure type="error">ColourfulException</failure>
     </testcase>
     <testcase
       file="tests/ExampleSpec.hs"

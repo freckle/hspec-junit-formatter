@@ -14,7 +14,12 @@ import qualified Data.Text as Text
 import Data.Time.ISO8601 (formatISO8601)
 import Data.XML.Types (Event)
 import Test.Hspec.JUnit.Schema
-  (Location(..), Result(..), Suite(..), Suites(..), TestCase(..))
+  ( Location (..)
+  , Result (..)
+  , Suite (..)
+  , Suites (..)
+  , TestCase (..)
+  )
 import Text.Printf
 import qualified Text.Regex.Base as Regex
 import qualified Text.Regex.TDFA.Text as Regex
@@ -22,11 +27,12 @@ import Text.XML.Stream.Render (attr, content, tag)
 
 renderJUnit :: MonadThrow m => Bool -> ConduitT Suites Event m ()
 renderJUnit shouldDropConsoleFormatting = awaitForever $ \Suites {..} ->
-  tag "testsuites" (attr "name" suitesName)
-    $ CL.sourceList suitesSuites
-    .| mergeSource idStream
-    .| suite shouldDropConsoleFormatting
-  where idStream = CL.iterate (+ 1) 0
+  tag "testsuites" (attr "name" suitesName) $
+    CL.sourceList suitesSuites
+      .| mergeSource idStream
+      .| suite shouldDropConsoleFormatting
+ where
+  idStream = CL.iterate (+ 1) 0
 
 suite :: MonadThrow m => Bool -> ConduitT (Int, Suite) Event m ()
 suite shouldDropConsoleFormatting = awaitForever $ \(i, theSuite@Suite {..}) ->
@@ -45,16 +51,16 @@ suite shouldDropConsoleFormatting = awaitForever $ \(i, theSuite@Suite {..}) ->
       <> attr "hostname" "localhost"
       <> attr "tests" (tshow $ length suiteCases)
       <> attr
-           "failures"
-           (tshow
-           $ length [ () | Just Failure{} <- testCaseResult <$> suiteCases ]
-           )
+        "failures"
+        ( tshow $
+            length [() | Just Failure {} <- testCaseResult <$> suiteCases]
+        )
       <> attr "errors" "0"
       <> attr
-           "skipped"
-           (tshow
-           $ length [ () | Just Skipped{} <- testCaseResult <$> suiteCases ]
-           )
+        "skipped"
+        ( tshow $
+            length [() | Just Skipped {} <- testCaseResult <$> suiteCases]
+        )
 
 tshow :: Show a => a -> Text
 tshow = pack . show
@@ -62,9 +68,9 @@ tshow = pack . show
 testCase :: MonadThrow m => Bool -> ConduitT TestCase Event m ()
 testCase shouldDropConsoleFormatting =
   awaitForever $ \(TestCase mLocation className name duration mResult) ->
-    tag "testcase" (attributes mLocation className name duration)
-      $ traverse_ yield mResult
-      .| result shouldDropConsoleFormatting
+    tag "testcase" (attributes mLocation className name duration) $
+      traverse_ yield mResult
+        .| result shouldDropConsoleFormatting
  where
   attributes mLocation className name duration =
     maybe mempty (attr "file" . pack . locationFile) mLocation
@@ -85,18 +91,22 @@ result shouldDropConsoleFormatting = awaitForever go
   dropConsoleFormatting :: Text -> Text
   dropConsoleFormatting input
     | shouldDropConsoleFormatting =
-      let regex = Regex.makeRegex (pack "\x1b\\[[0-9;]*[mGKHF]") :: Regex.Regex
+        let
+          regex = Regex.makeRegex (pack "\x1b\\[[0-9;]*[mGKHF]") :: Regex.Regex
           matches = Regex.matchAll regex input
           dropMatch (offset, len) input' =
-            let (begining, rest) = Text.splitAt offset input'
-                (_, end) = Text.splitAt len rest
-            in begining <> end
+            let
+              (begining, rest) = Text.splitAt offset input'
+              (_, end) = Text.splitAt len rest
+            in
+              begining <> end
           matchTuples = map (Array.! 0) matches
-      in foldr dropMatch input matchTuples
+        in
+          foldr dropMatch input matchTuples
     | otherwise = input
 
 sumDurations :: [TestCase] -> Double
 sumDurations cases = sum $ testCaseDuration <$> cases
 
-roundToStr :: (PrintfArg a) => a -> Text
+roundToStr :: PrintfArg a => a -> Text
 roundToStr = pack . printf "%0.9f"

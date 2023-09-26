@@ -1,2 +1,7 @@
 exclude:
-  - "tests/golden.xml"
+  - "tests/golden/**/*.xml"
+
+restylers:
+  - fourmolu
+  - "!stylish-haskell"
+  - "*"

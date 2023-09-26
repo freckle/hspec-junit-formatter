@@ -1,4 +1,3 @@
----
 name: hspec-junit-formatter
 version: 1.1.0.2
 github: "freckle/hspec-junit-formatter"
@@ -7,14 +6,41 @@ author: "Freckle R&D"
 maintainer: "engineering@freckle.com"
 copyright: "2021 Renaissance Learning Inc"
 
-extra-source-files:
+extra-doc-files:
   - README.md
   - CHANGELOG.md
-  - tests/golden*.xml
+
+extra-source-files:
+  - tests/golden/**/*.xml
 
 category: Testing
 synopsis: A JUnit XML runner/formatter for hspec
-description: Allows hspec tests to write JUnit XML output for parsing in various tools.
+description: |
+  Allows hspec tests to write JUnit XML output for parsing in various tools.
+
+ghc-options:
+  - -fignore-optim-changes
+  - -Weverything
+  - -Wno-all-missed-specialisations
+    -Wno-missed-specialisations
+  - -Wno-missing-exported-signatures # re-enables missing-signatures
+  - -Wno-missing-import-lists
+  - -Wno-missing-local-signatures
+  - -Wno-monomorphism-restriction
+  - -Wno-safe
+  - -Wno-unsafe
+
+when:
+  - condition: "impl(ghc >= 9.2)"
+    ghc-options:
+      - -Wno-missing-kind-signatures
+  - condition: "impl(ghc >= 8.10)"
+    ghc-options:
+      - -Wno-missing-safe-haskell-mode
+      - -Wno-prepositive-qualified-module
+  - condition: "impl(ghc >= 8.8)"
+    ghc-options:
+      - -fwrite-ide-info
 
 dependencies:
   - base < 5
@@ -71,6 +97,7 @@ tests:
       - containers
       - filepath
       - hspec
+      - hspec-golden
       - hspec-junit-formatter
       - temporary
       - text
