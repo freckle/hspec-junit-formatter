@@ -1,12 +1,12 @@
 -- | Load a 'JUnitConfig' using environment variables
 module Test.Hspec.JUnit.Config.Env
-    ( envJUnitEnabled
-    , envJUnitConfig
-    ) where
+  ( envJUnitEnabled
+  , envJUnitConfig
+  ) where
 
 import Prelude
 
-import Data.Semigroup (Endo(..))
+import Data.Semigroup (Endo (..))
 import Data.Text (pack)
 import System.Directory (getCurrentDirectory)
 import System.Environment (lookupEnv)
@@ -24,17 +24,19 @@ envJUnitEnabled = (== Just "1") <$> lookupEnv (envPrefix <> "ENABLED")
 -- * @JUNIT_OUTPUT_DIRECTORY@ 'setJUnitConfigOutputDirectory'
 -- * @JUNIT_OUTPUT_NAME@ 'setJUnitConfigOutputName
 -- * and so on
---
 envJUnitConfig :: IO JUnitConfig
 envJUnitConfig = do
-  modify <- appEndo . foldMap Endo <$> sequence
-    [ lookupEnvOverride "OUTPUT_DIRECTORY" setJUnitConfigOutputDirectory
-    , lookupEnvOverride "OUTPUT_NAME" setJUnitConfigOutputName
-    , lookupEnvOverride "OUTPUT_FILE" setJUnitConfigOutputFile
-    , lookupEnvOverride "SUITE_NAME" $ setJUnitConfigSuiteName . pack
-    , lookupEnvOverride "SOURCE_PATH_PREFIX" setJUnitConfigSourcePathPrefix
-    , lookupEnvOverride "DROP_CONSOLE_FORMATTING" $ setJUnitConfigDropConsoleFormatting . (== "1")
-    ]
+  modify <-
+    appEndo . foldMap Endo
+      <$> sequence
+        [ lookupEnvOverride "OUTPUT_DIRECTORY" setJUnitConfigOutputDirectory
+        , lookupEnvOverride "OUTPUT_NAME" setJUnitConfigOutputName
+        , lookupEnvOverride "OUTPUT_FILE" setJUnitConfigOutputFile
+        , lookupEnvOverride "SUITE_NAME" $ setJUnitConfigSuiteName . pack
+        , lookupEnvOverride "SOURCE_PATH_PREFIX" setJUnitConfigSourcePathPrefix
+        , lookupEnvOverride "DROP_CONSOLE_FORMATTING" $
+            setJUnitConfigDropConsoleFormatting . (== "1")
+        ]
 
   modify . defaultJUnitConfig . pack . takeBaseName <$> getCurrentDirectory
 

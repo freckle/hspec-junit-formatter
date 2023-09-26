@@ -1,17 +1,18 @@
+{-# LANGUAGE CPP #-}
+
 module Test.Hspec.JUnit
-  (
-  -- * Runners
+  ( -- * Runners
     hspecJUnit
   , hspecJUnitWith
 
-  -- * Directly modifying 'Config'
+    -- * Directly modifying 'Config'
   , configWithJUnit
   , configWithJUnitAvailable
 
-  -- * Actual format function
+    -- * Actual format function
   , junitFormat
 
-  -- * Configuration
+    -- * Configuration
   , module Test.Hspec.JUnit.Config
   ) where
 
@@ -50,7 +51,6 @@ import Text.XML.Stream.Render (def, renderBytes)
 -- All configuration of the JUnit report occurs through environment variables.
 --
 -- See "Test.Hspec.JUnit.Config" and "Test.Hspec.JUnit.Config.Env".
---
 hspecJUnit :: Spec -> IO ()
 hspecJUnit = hspecJUnitWith defaultConfig
 
@@ -69,14 +69,13 @@ hspecJUnitWith config spec = do
 -- | Modify an Hspec 'Config' to use 'junitFormat'
 configWithJUnit :: JUnitConfig -> Config -> Config
 configWithJUnit junitConfig config =
-  config { configFormat = Just $ junitFormat junitConfig }
+  config {configFormat = Just $ junitFormat junitConfig}
 
 -- | Modify an Hspec 'Config' to have the 'junitFormat' /available/
 --
 -- Adds @junit@ to the list of available options for @-f, --format@.
 --
 -- __NOTE__: This only works with hspec >= 2.9, otherwise it is a no-op.
---
 configWithJUnitAvailable :: JUnitConfig -> Config -> Config
 configWithJUnitAvailable = configAddAvailableFormatter "junit" . junitFormat
 
@@ -97,23 +96,25 @@ junitFormat junitConfig _config = pure $ \case
 
     let
       groups = groupItems paths
-      output = Schema.Suites
-        { suitesName = suiteName
-        , suitesSuites = groups <&> \(group, items) -> do
-          let
-            suite xs = Schema.Suite
-              { suiteName = group
-              , suiteTimestamp = time
-              , suiteCases = xs
-              }
-          suite $ uncurry (itemToTestCase applyPrefix group) <$> items
-        }
+      output =
+        Schema.Suites
+          { suitesName = suiteName
+          , suitesSuites =
+              groups <&> \(group, items) -> do
+                let suite xs =
+                      Schema.Suite
+                        { suiteName = group
+                        , suiteTimestamp = time
+                        , suiteCases = xs
+                        }
+                suite $ uncurry (itemToTestCase applyPrefix group) <$> items
+          }
 
-    runConduitRes
-      $ sourceList [output]
-      .| renderJUnit dropConsoleFormatting
-      .| renderBytes def
-      .| sinkFile file
+    runConduitRes $
+      sourceList [output]
+        .| renderJUnit dropConsoleFormatting
+        .| renderBytes def
+        .| sinkFile file
  where
   file = getJUnitConfigOutputFile junitConfig
   suiteName = getJUnitConfigSuiteName junitConfig
@@ -165,13 +166,13 @@ itemToTestCase applyPrefix group name item = Schema.TestCase
     Nothing -> str
     Just Location {..} ->
       mconcat
-          [ pack $ applyPrefix locationFile
-          , ":"
-          , pack $ show locationLine
-          , ":"
-          , pack $ show locationColumn
-          , "\n"
-          ]
+        [ pack $ applyPrefix locationFile
+        , ":"
+        , pack $ show locationLine
+        , ":"
+        , pack $ show locationColumn
+        , "\n"
+        ]
         <> str
   prefixInfo str
     | T.null $ T.strip $ pack $ itemInfo item = str
@@ -184,10 +185,11 @@ itemResultLocation item = case itemResult item of
   Failure mLocation _ -> mLocation
 
 toSchemaLocation :: (FilePath -> FilePath) -> Location -> Schema.Location
-toSchemaLocation applyPrefix Location {..} = Schema.Location
-  { Schema.locationFile = applyPrefix locationFile
-  , Schema.locationLine = fromIntegral $ max 0 locationLine
-  }
+toSchemaLocation applyPrefix Location {..} =
+  Schema.Location
+    { Schema.locationFile = applyPrefix locationFile
+    , Schema.locationLine = fromIntegral $ max 0 locationLine
+    }
 
 unSeconds :: Seconds -> Double
 unSeconds (Seconds x) = x
@@ -197,4 +199,5 @@ foundLines msg found = case lines' of
   [] -> []
   first : rest ->
     unpack (msg <> ": " <> first) : (unpack . (T.replicate 9 " " <>) <$> rest)
-  where lines' = T.lines . pack $ show found
+ where
+  lines' = T.lines . pack $ show found

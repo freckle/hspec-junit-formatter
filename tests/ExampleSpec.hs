@@ -2,7 +2,7 @@
 --
 -- The path name and line numbers of this file are part of the golden report
 -- being tested with. So if this file changes, they will need to be regenerated.
---
+-- In fact, this sentence was added to retain them across a formatting change.
 module ExampleSpec (spec) where
 
 import Control.Exception
@@ -29,7 +29,7 @@ spec = do
         throwIO ColourfulException :: IO ()
 
 data ColourfulException = ColourfulException
-  deriving stock Show
+  deriving stock (Show)
 
 instance Exception ColourfulException where
-  displayException _ =  "\x1b[32mColour\x1b[31mful\x1b[0mException"
+  displayException _ = "\x1b[32mColour\x1b[31mful\x1b[0mException"

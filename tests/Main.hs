@@ -44,10 +44,10 @@ withJUnitReportConfig modifyConfig spec f =
     let
       path = tmp </> "test.xml"
       junitConfig =
-        modifyConfig
-          $ setJUnitConfigOutputDirectory tmp
-          $ setJUnitConfigOutputName "test.xml"
-          $ defaultJUnitConfig "hspec-junit-format"
+        modifyConfig $
+          setJUnitConfigOutputDirectory tmp $
+            setJUnitConfigOutputName "test.xml" $
+              defaultJUnitConfig "hspec-junit-format"
       hspecConfig = configWithJUnit junitConfig defaultConfig
     void $ runSpec spec hspecConfig
     f =<< XML.readFile XML.def path
@@ -56,12 +56,13 @@ normalizeDoc :: XML.Document -> XML.Document
 normalizeDoc = removeWhitespaceNodes . removeTimeAttributes
 
 removeWhitespaceNodes :: XML.Document -> XML.Document
-removeWhitespaceNodes doc = doc
-  { XML.documentRoot = go $ XML.documentRoot doc
-  }
+removeWhitespaceNodes doc =
+  doc
+    { XML.documentRoot = go $ XML.documentRoot doc
+    }
  where
   go el =
-    el { XML.elementNodes = concatMap filterWhitespace $ XML.elementNodes el }
+    el {XML.elementNodes = concatMap filterWhitespace $ XML.elementNodes el}
 
   filterWhitespace :: XML.Node -> [XML.Node]
   filterWhitespace = \case
@@ -75,14 +76,16 @@ removeTimeAttributes =
   removeAttributesByName "time" . removeAttributesByName "timestamp"
 
 removeAttributesByName :: XML.Name -> XML.Document -> XML.Document
-removeAttributesByName name doc = doc
-  { XML.documentRoot = go $ XML.documentRoot doc
-  }
- where
-  go el = el
-    { XML.elementAttributes = Map.delete name $ XML.elementAttributes el
-    , XML.elementNodes = map (onNodeElement go) $ XML.elementNodes el
+removeAttributesByName name doc =
+  doc
+    { XML.documentRoot = go $ XML.documentRoot doc
     }
+ where
+  go el =
+    el
+      { XML.elementAttributes = Map.delete name $ XML.elementAttributes el
+      , XML.elementNodes = map (onNodeElement go) $ XML.elementNodes el
+      }
 
   onNodeElement f = \case
     XML.NodeElement el -> XML.NodeElement $ f el
@@ -99,7 +102,7 @@ removeAttributesByName name doc = doc
 --
 -- We should really re-consider the golden testing approach. If we were instead
 -- asserting on parsed XML, we'd have a lot more options here.
---
+
 goldenPath, goldenPrefixedPath :: FilePath
 #if __GLASGOW_HASKELL__ >= 900
 goldenPath = "tests/golden-ghc-9.xml"
