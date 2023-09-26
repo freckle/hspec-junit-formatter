@@ -33,6 +33,7 @@ envJUnitConfig = do
     , lookupEnvOverride "OUTPUT_FILE" setJUnitConfigOutputFile
     , lookupEnvOverride "SUITE_NAME" $ setJUnitConfigSuiteName . pack
     , lookupEnvOverride "SOURCE_PATH_PREFIX" setJUnitConfigSourcePathPrefix
+    , lookupEnvOverride "DROP_CONSOLE_FORMATTING" $ setJUnitConfigDropConsoleFormatting . (== "1")
     ]
 
   modify . defaultJUnitConfig . pack . takeBaseName <$> getCurrentDirectory
