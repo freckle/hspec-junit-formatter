@@ -5,6 +5,34 @@
 
 packages:
 - completed:
+    hackage: hspec-2.10.0@sha256:2d1dc53e361998f002497b7222fdb700cc540b2aaf880e2619a0b5d54abb74e5,1712
+    pantry-tree:
+      sha256: 5d8a184b89267523718e22cc4ded4c980d08af7aa4b53ec027822d0cf5065756
+      size: 583
+  original:
+    hackage: hspec-2.10.0
+- completed:
+    hackage: hspec-api-2.10.0@sha256:68690737181eae90d25e214803d966658e661215ddf5e24f1495b54a71a09364,1509
+    pantry-tree:
+      sha256: 5f40ff2d1b0e137530fd5ea0790e0f8a08ea1552cf570627861e666bd291fad0
+      size: 665
+  original:
+    hackage: hspec-api-2.10.0
+- completed:
+    hackage: hspec-core-2.10.0@sha256:0402831c0af58d182da49f836aef6da9e195d242856ea8ce3f4ce3df245c85b0,6677
+    pantry-tree:
+      sha256: 217e63acceb2c29d07d06b4fad648ed79575bc6d1158619a275677d5902b05ef
+      size: 5819
+  original:
+    hackage: hspec-core-2.10.0
+- completed:
+    hackage: hspec-discover-2.10.0@sha256:517d0892217539969c199f9cc30065db7bcd68ff5512095e4f94ff8ef35d1313,2166
+    pantry-tree:
+      sha256: 5e31c43b5c1477987d7321456b3dc69ce0b8f35312c5ea516702f91be42b20ca
+      size: 828
+  original:
+    hackage: hspec-discover-2.10.0
+- completed:
     hackage: hspec-golden-0.2.1.0@sha256:b695ae72685bbb5acd04cdd79d07c43de5ab8867e28662dd1a0002296f2a4940,2635
     pantry-tree:
       sha256: d72fec5f2c0568ae958282c7a8b8f5bfba146e3e4ceee0510c0e22be5c8eb740

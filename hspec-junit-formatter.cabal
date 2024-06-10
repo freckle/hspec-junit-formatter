@@ -1,6 +1,6 @@
 cabal-version: 1.18
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -32,10 +32,12 @@ source-repository head
 
 library
   exposed-modules:
-      Test.Hspec.Core.Runner.Ext
       Test.Hspec.JUnit
       Test.Hspec.JUnit.Config
       Test.Hspec.JUnit.Config.Env
+      Test.Hspec.JUnit.Format
+      Test.Hspec.JUnit.Formatter
+      Test.Hspec.JUnit.Formatter.Env
       Test.Hspec.JUnit.Render
       Test.Hspec.JUnit.Schema
   other-modules:
@@ -75,7 +77,8 @@ library
     , directory
     , exceptions
     , filepath
-    , hspec-core >=2.8.1
+    , hspec-api
+    , hspec-core >=2.10.0
     , iso8601-time
     , regex-base
     , regex-tdfa

@@ -79,7 +79,8 @@ library:
     - directory
     - exceptions
     - filepath
-    - hspec-core >= 2.8.1
+    - hspec-api
+    - hspec-core >= 2.10.0 # modifyConfig
     - iso8601-time
     - regex-base
     - regex-tdfa
