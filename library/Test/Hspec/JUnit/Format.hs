@@ -1,20 +1,5 @@
-{-# LANGUAGE CPP #-}
-
-module Test.Hspec.JUnit
-  {-# DEPRECATED "Use Test.Hspec.JUnit.Formatter" #-}
-  ( -- * Runners
-    hspecJUnit
-  , hspecJUnitWith
-
-    -- * Directly modifying 'Config'
-  , configWithJUnit
-  , configWithJUnitAvailable
-
-    -- * Actual format function
-  , junitFormat
-
-    -- * Configuration
-  , module Test.Hspec.JUnit.Config
+module Test.Hspec.JUnit.Format
+  ( junit
   ) where
 
 import Prelude
@@ -31,68 +16,14 @@ import qualified Data.Text as T
 import Data.Time (getCurrentTime)
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath (splitFileName)
-import Test.Hspec.Core.Format
-  ( Event (..)
-  , FailureReason (..)
-  , Format
-  , FormatConfig
-  , Item (..)
-  , Location (..)
-  , Path
-  , Result (..)
-  , Seconds (..)
-  )
-import Test.Hspec.Core.Runner (Config (..), defaultConfig, hspecWith)
-import Test.Hspec.Core.Spec (Spec)
-import Test.Hspec.JUnit.Config
-import Test.Hspec.JUnit.Config.Env
+import Test.Hspec.Api.Format.V1
+import Test.Hspec.JUnit.Config as Config
 import Test.Hspec.JUnit.Render (renderJUnit)
 import qualified Test.Hspec.JUnit.Schema as Schema
 import Text.XML.Stream.Render (def, renderBytes)
 
--- | Like 'hspec' but adds JUNit functionality
---
--- To actually /use/ the JUnit format, you must set @JUNIT_ENABLED=1@ in the
--- environment; by default, this function just behaves like 'hspec'.
---
--- Running tests with @--test-arguments="-f junit"@ also works.
---
--- All configuration of the JUnit report occurs through environment variables.
---
--- See "Test.Hspec.JUnit.Config" and "Test.Hspec.JUnit.Config.Env".
-hspecJUnit :: Spec -> IO ()
-hspecJUnit = hspecJUnitWith defaultConfig
-
--- | 'hspecJUnit' but built on a non-default 'Config'
-hspecJUnitWith :: Config -> Spec -> IO ()
-hspecJUnitWith config spec = do
-  junitEnabled <- envJUnitEnabled
-  junitConfig <- envJUnitConfig
-
-  let
-    modify = if junitEnabled then configWithJUnit junitConfig else id
-    base = configWithJUnitAvailable junitConfig config
-
-  hspecWith (modify base) spec
-
--- | Modify an Hspec 'Config' to use 'junitFormat'
-configWithJUnit :: JUnitConfig -> Config -> Config
-configWithJUnit junitConfig config =
-  config {configFormat = Just $ junitFormat junitConfig}
-
--- | Modify an Hspec 'Config' to have the 'junitFormat' /available/
---
--- Adds @junit@ to the list of available options for @-f, --format@.
-configWithJUnitAvailable :: JUnitConfig -> Config -> Config
-configWithJUnitAvailable junitConfig config =
-  config
-    { configAvailableFormatters =
-        configAvailableFormatters config <> [("junit", junitFormat junitConfig)]
-    }
-
--- | Hspec 'configFormat' that generates a JUnit report
-junitFormat :: JUnitConfig -> FormatConfig -> IO Format
-junitFormat junitConfig _config = pure $ \case
+junit :: JUnitConfig -> FormatConfig -> IO Format
+junit junitConfig _config = pure $ \case
   Started -> pure ()
   GroupStarted _ -> pure ()
   GroupDone _ -> pure ()
@@ -199,6 +130,19 @@ toSchemaLocation applyPrefix Location {..} =
 unSeconds :: Seconds -> Double
 unSeconds (Seconds x) = x
 
+reasonToText :: FailureReason -> Text
+reasonToText = \case
+  Error _ err -> pack $ show err
+  NoReason -> "no reason"
+  Reason err -> pack err
+  ExpectedButGot preface expected actual ->
+    T.unlines $
+      pack
+        <$> fromMaybe "" preface
+          : ( foundLines "expected" expected
+                <> foundLines " but got" actual
+            )
+
 foundLines :: Show a => Text -> a -> [String]
 foundLines msg found = case lines' of
   [] -> []
@@ -206,21 +150,3 @@ foundLines msg found = case lines' of
     unpack (msg <> ": " <> first) : (unpack . (T.replicate 9 " " <>) <$> rest)
  where
   lines' = T.lines . pack $ show found
-
-{- FOURMOLU_DISABLE -}
-reasonToText :: FailureReason -> Text
-reasonToText = \case
-  Error _ err -> pack $ show err
-  NoReason -> "no reason"
-  Reason err -> pack err
-#if MIN_VERSION_hspec_core(2,11,0)
-  ColorizedReason err -> pack err
-#endif
-  ExpectedButGot preface expected actual ->
-    T.unlines
-      $ pack
-      <$> fromMaybe "" preface
-      : (foundLines "expected" expected
-        <> foundLines " but got" actual
-        )
-{- FOURMOLU_ENABLE -}

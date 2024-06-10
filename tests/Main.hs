@@ -16,7 +16,8 @@ import System.FilePath ((<.>), (</>))
 import System.IO.Temp (withSystemTempDirectory)
 import Test.Hspec
 import Test.Hspec.Golden
-import Test.Hspec.JUnit
+import Test.Hspec.JUnit.Config
+import qualified Test.Hspec.JUnit.Formatter as Formatter
 import Test.Hspec.Runner
 import qualified Text.XML as XML
 
@@ -45,7 +46,7 @@ junitGolden name modifyConfig = do
               setJUnitConfigOutputName "test.xml" $
                 defaultJUnitConfig "hspec-junit-format"
 
-    void $ runSpec ExampleSpec.spec $ configWithJUnit junitConfig defaultConfig
+    void $ runSpec' $ Formatter.use junitConfig ExampleSpec.spec
     readNormalizedXML $ tmp </> "test.xml"
 
   pure
@@ -59,6 +60,11 @@ junitGolden name modifyConfig = do
       , actualFile = Nothing
       , failFirstTime = False
       }
+
+runSpec' :: Spec -> IO ()
+runSpec' spec = do
+  (config, forest) <- evalSpec defaultConfig spec
+  void $ runSpecForest forest config
 
 readNormalizedXML :: FilePath -> IO XML.Document
 readNormalizedXML = fmap normalizeDoc . XML.readFile XML.def

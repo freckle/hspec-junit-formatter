@@ -9,27 +9,95 @@ A `JUnit` XML runner/formatter for [`hspec`](http://hspec.github.io/).
 
 <!--
 ```haskell
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
+
 module Main (main) where
 import Prelude
 import Text.Markdown.Unlit ()
+
+-- Used in a later example
+import qualified Test.Hspec.JUnit.Formatter.Env as FormatterEnv
 ```
 -->
 
-## Usage
+## Usage (with `hspec-discover`)
+
+Place the following in `test/SpecHook.hs`:
 
 ```haskell
 import Test.Hspec
-import Test.Hspec.JUnit
-import System.Environment (setEnv)
+import Test.Hspec.JUnit.Config
+import qualified Test.Hspec.JUnit.Formatter as Formatter
 
+hook :: Spec -> Spec
+hook = Formatter.use $ defaultJUnitConfig "test-suite"
+```
+
+This _replaces_ the usual formatter, so only a JUnit report is generated and no
+other output is visible.
+
+### Registering instead of using
+
+To make the JUnit formatter available for use with `--format`, but not used by
+default, use `register`:
+
+```haskell
+hook2 :: Spec -> Spec
+hook2 = Formatter.register $ defaultJUnitConfig "test-suite"
+```
+
+
+### Adding a JUnit report
+
+To produce a JUnit report _in addition to normal output_, use `add`:
+
+```haskell
+hook3 :: Spec -> Spec
+hook3 = Formatter.add $ defaultJUnitConfig "test-suite"
+```
+
+### Environment Configuration
+
+To configure things via @JUNIT_@-prefixed environment variables, import
+`Formatter.Env` instead. It exports all the same functions:
+
+```hs
+import qualified Test.Hspec.JUnit.Formatter.Env as FormatterEnv
+```
+
+And set the necessary variables,
+
+```
+JUNIT_OUTPUT_DIRECTORY=/tmp
+JUNIT_SUITE_NAME=my-tests
+```
+
+```haskell
+hook4 :: Spec -> Spec
+hook4 = FormatterEnv.add
+```
+
+### Environment Enabling
+
+To only apply a hook if `JUNIT_ENABLED=1`, wrap it in `whenEnabled`:
+
+```
+JUNIT_ENABLED=1
+```
+
+```haskell
+hook5 :: Spec -> Spec
+hook5 = FormatterEnv.whenEnabled FormatterEnv.add
+```
+
+### Without `hspec-discover`
+
+Hooks are just functions of type `Spec -> Spec`, so you can apply them right
+before calling `hspec` in `main`:
+
+```haskell
 main :: IO ()
-main = do
-  -- Most likely done in your CI setup
-  setEnv "JUNIT_ENABLED" "1"
-  setEnv "JUNIT_OUTPUT_DIRECTORY" "/tmp"
-  setEnv "JUNIT_SUITE_NAME" "my-tests"
-
-  hspecJUnit spec
+main = hspec $ FormatterEnv.whenEnabled FormatterEnv.add spec
 
 spec :: Spec
 spec = describe "Addition" $ do

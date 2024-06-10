@@ -1,3 +1,7 @@
 resolver: lts-19.33
 extra-deps:
+  - hspec-2.10.0
+  - hspec-api-2.10.0
+  - hspec-core-2.10.0
+  - hspec-discover-2.10.0
   - hspec-golden-0.2.1.0
