@@ -1,6 +1,9 @@
-## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.1.0.2...main)
+## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.1.1.0...main)
 
-None
+## [v1.1.1.0](https://github.com/freckle/hspec-junit-formatter/compare/v1.1.0.2...v1.1.1.0)
+
+- Add `Test.Hspec.JUnit.Formatter{,Env}`, for use as a [spec hook](https://hspec.github.io/hspec-discover.html#spec-hooks)
+- Drop support for `hspec < 0.10`
 
 ## [v1.1.0.2](https://github.com/freckle/hspec-junit-formatter/compare/v1.1.0.1...v1.1.0.2)
 
