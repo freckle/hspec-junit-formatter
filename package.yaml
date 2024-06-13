@@ -91,7 +91,7 @@ library:
 
 tests:
   spec:
-    main: Main.hs
+    main: Spec.hs
     source-dirs: tests
     ghc-options: -threaded -rtsopts -O0 "-with-rtsopts=-N"
     dependencies:

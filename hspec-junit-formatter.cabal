@@ -139,9 +139,10 @@ test-suite readme
 
 test-suite spec
   type: exitcode-stdio-1.0
-  main-is: Main.hs
+  main-is: Spec.hs
   other-modules:
       Example
+      Test.Hspec.JUnit.FormatterSpec
       Paths_hspec_junit_formatter
   hs-source-dirs:
       tests
