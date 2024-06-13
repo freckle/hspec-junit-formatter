@@ -2,6 +2,9 @@
 module Test.Hspec.JUnit.Config.Env
   ( envJUnitEnabled
   , envJUnitConfig
+
+    -- * Exported for testing
+  , readJUnitConfig
   ) where
 
 import Prelude
@@ -9,7 +12,7 @@ import Prelude
 import Data.Semigroup (Endo (..))
 import Data.Text (pack)
 import System.Directory (getCurrentDirectory)
-import System.Environment (lookupEnv)
+import System.Environment (getEnvironment, lookupEnv)
 import System.FilePath (takeBaseName)
 import Test.Hspec.JUnit.Config
 
@@ -26,26 +29,28 @@ envJUnitEnabled = (== Just "1") <$> lookupEnv (envPrefix <> "ENABLED")
 -- * and so on
 envJUnitConfig :: IO JUnitConfig
 envJUnitConfig = do
-  modify <-
-    appEndo . foldMap Endo
-      <$> sequence
-        [ lookupEnvOverride "OUTPUT_DIRECTORY" setJUnitConfigOutputDirectory
-        , lookupEnvOverride "OUTPUT_NAME" setJUnitConfigOutputName
-        , lookupEnvOverride "OUTPUT_FILE" setJUnitConfigOutputFile
-        , lookupEnvOverride "SUITE_NAME" $ setJUnitConfigSuiteName . pack
-        , lookupEnvOverride "SOURCE_PATH_PREFIX" setJUnitConfigSourcePathPrefix
-        , lookupEnvOverride "DROP_CONSOLE_FORMATTING" $
+  env <- getEnvironment
+  base <- takeBaseName <$> getCurrentDirectory
+  pure $ readJUnitConfig base env
+
+readJUnitConfig :: FilePath -> [(String, String)] -> JUnitConfig
+readJUnitConfig base env = modify $ defaultJUnitConfig $ pack base
+ where
+  modify =
+    appEndo $
+      foldMap
+        Endo
+        [ readEnv "OUTPUT_DIRECTORY" setJUnitConfigOutputDirectory
+        , readEnv "OUTPUT_NAME" setJUnitConfigOutputName
+        , readEnv "OUTPUT_FILE" setJUnitConfigOutputFile
+        , readEnv "SUITE_NAME" $ setJUnitConfigSuiteName . pack
+        , readEnv "SOURCE_PATH_PREFIX" setJUnitConfigSourcePathPrefix
+        , readEnv "DROP_CONSOLE_FORMATTING" $
             setJUnitConfigDropConsoleFormatting . (== "1")
         ]
 
-  modify . defaultJUnitConfig . pack . takeBaseName <$> getCurrentDirectory
-
-lookupEnvOverride
-  :: String
-  -> (String -> JUnitConfig -> JUnitConfig)
-  -> IO (JUnitConfig -> JUnitConfig)
-lookupEnvOverride name setter =
-  maybe id setter <$> lookupEnv (envPrefix <> name)
+  readEnv name setter =
+    maybe id setter $ lookup (envPrefix <> name) env
 
 envPrefix :: String
 envPrefix = "JUNIT_"
