@@ -27,6 +27,10 @@ envJUnitEnabled = (== Just "1") <$> lookupEnv (envPrefix <> "ENABLED")
 -- * @JUNIT_OUTPUT_DIRECTORY@ 'setJUnitConfigOutputDirectory'
 -- * @JUNIT_OUTPUT_NAME@ 'setJUnitConfigOutputName'
 -- * and so on
+--
+-- Environment variable values will have the string @{base}@ replaced with the
+-- basename of the current directory. This can be useful in a monorepository of
+-- multiple packages, for example: @JUNIT_OUTPUT_FILE={base}.xml@
 envJUnitConfig :: IO JUnitConfig
 envJUnitConfig = do
   env <- getEnvironment
@@ -50,7 +54,15 @@ readJUnitConfig base env = modify $ defaultJUnitConfig $ pack base
         ]
 
   readEnv name setter =
-    maybe id setter $ lookup (envPrefix <> name) env
+    maybe id (setter . replaceBase base) $ lookup (envPrefix <> name) env
 
 envPrefix :: String
 envPrefix = "JUNIT_"
+
+replaceBase :: String -> String -> String
+replaceBase base = go
+ where
+  go = \case
+    [] -> []
+    '{' : 'b' : 'a' : 's' : 'e' : '}' : rest -> base <> go rest
+    c : rest -> c : go rest
