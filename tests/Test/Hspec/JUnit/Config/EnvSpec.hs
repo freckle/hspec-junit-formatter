@@ -83,3 +83,13 @@ spec = do
 
       getJUnitConfigDropConsoleFormatting config1 `shouldBe` True
       getJUnitConfigDropConsoleFormatting config0 `shouldBe` False
+
+    it "interpolates {base}" $ do
+      let config =
+            readJUnitConfig
+              "some-package"
+              [ ("JUNIT_OUTPUT_FILE", "{base}/test_results.xml")
+              ]
+
+      getJUnitConfigOutputFile config
+        `shouldBe` "some-package/test_results.xml"
