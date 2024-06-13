@@ -1,9 +1,8 @@
 {-# LANGUAGE CPP #-}
 
-module Main
-  ( main
-  )
-where
+module Test.Hspec.JUnit.FormatterSpec
+  ( spec
+  ) where
 
 import Prelude
 
@@ -21,15 +20,14 @@ import qualified Test.Hspec.JUnit.Formatter as Formatter
 import Test.Hspec.Runner
 import qualified Text.XML as XML
 
-main :: IO ()
-main = hspec $ do
-  describe "XML output" $ do
-    it "matches golden file" $
-      junitGolden "default" id
+spec :: Spec
+spec = do
+  it "matches golden file" $
+    junitGolden "default" id
 
-    it "matches golden file with prefixing" $
-      junitGolden "prefixed" $
-        setJUnitConfigSourcePathPrefix "lol/monorepo"
+  it "matches golden file with prefixing" $
+    junitGolden "prefixed" $
+      setJUnitConfigSourcePathPrefix "lol/monorepo"
 
 -- | Run @Example.spec@ and compare XML to a golden file
 junitGolden
@@ -46,7 +44,7 @@ junitGolden name modifyConfig = do
               setJUnitConfigOutputName "test.xml" $
                 defaultJUnitConfig "hspec-junit-format"
 
-    void $ runSpec' $ Formatter.use junitConfig Example.spec
+    runSpec' $ Formatter.use junitConfig Example.spec
     readNormalizedXML $ tmp </> "test.xml"
 
   pure
@@ -62,8 +60,8 @@ junitGolden name modifyConfig = do
       }
 
 runSpec' :: Spec -> IO ()
-runSpec' spec = do
-  (config, forest) <- evalSpec defaultConfig spec
+runSpec' x = do
+  (config, forest) <- evalSpec defaultConfig x
   void $ runSpecForest forest config
 
 readNormalizedXML :: FilePath -> IO XML.Document
