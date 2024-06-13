@@ -22,7 +22,7 @@ envJUnitEnabled = (== Just "1") <$> lookupEnv (envPrefix <> "ENABLED")
 -- Variable names align with setter functions from "Test.Hspec.JUnit.Config":
 --
 -- * @JUNIT_OUTPUT_DIRECTORY@ 'setJUnitConfigOutputDirectory'
--- * @JUNIT_OUTPUT_NAME@ 'setJUnitConfigOutputName
+-- * @JUNIT_OUTPUT_NAME@ 'setJUnitConfigOutputName'
 -- * and so on
 envJUnitConfig :: IO JUnitConfig
 envJUnitConfig = do
