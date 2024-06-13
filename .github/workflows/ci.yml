@@ -28,7 +28,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: freckle/stack-action@v5
         env:
+          JUNIT_ENABLED: 1
           STACK_YAML: ${{ matrix.stack-yaml }}
+
+      - if: success() || failure()
+        uses: mikepenz/action-junit-report@v4
+        with:
+          report_paths: './junit.xml'
+          require_tests: true
+          annotate_only: true
 
   lint:
     runs-on: ubuntu-latest
