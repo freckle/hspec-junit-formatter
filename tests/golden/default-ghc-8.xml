@@ -9,19 +9,19 @@
     tests="2" failures="1" errors="0" skipped="0">
     <properties/>
     <testcase
-      file="tests/ExampleSpec.hs"
+      file="tests/Example.hs"
       line="19"
       name="has a failure"
       classname="Some section"
       time="0.000015537">
-      <failure type="error">tests/ExampleSpec.hs:19:7
+      <failure type="error">tests/Example.hs:19:7
 
 expected: &#34;False&#34;
  but got: &#34;True&#34;
 </failure>
     </testcase>
     <testcase
-      file="tests/ExampleSpec.hs"
+      file="tests/Example.hs"
       line="16"
       name="has an expectation"
       classname="Some section"
@@ -37,7 +37,7 @@ expected: &#34;False&#34;
     tests="4" failures="1" errors="0" skipped="1">
     <properties/>
     <testcase
-      file="tests/ExampleSpec.hs"
+      file="tests/Example.hs"
       line="28"
       name="throws a colourful exception"
       classname="Some section/A grouped context"
@@ -45,22 +45,22 @@ expected: &#34;False&#34;
       <failure type="error">ColourfulException</failure>
     </testcase>
     <testcase
-      file="tests/ExampleSpec.hs"
+      file="tests/Example.hs"
       line="27"
       name="gets skipped"
       classname="Some section/A grouped context"
       time="0.000006765">
-      <skipped>tests/ExampleSpec.hs:27:9
+      <skipped>tests/Example.hs:27:9
 some reason</skipped>
     </testcase>
     <testcase
-      file="tests/ExampleSpec.hs"
+      file="tests/Example.hs"
       line="24"
       name="also happens in a group"
       classname="Some section/A grouped context"
       time="0.000007421"/>
     <testcase
-      file="tests/ExampleSpec.hs"
+      file="tests/Example.hs"
       line="22"
       name="happens in a group"
       classname="Some section/A grouped context"

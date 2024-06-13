@@ -11,7 +11,7 @@ import Control.Monad (void)
 import Data.Char (isSpace)
 import qualified Data.Map.Strict as Map
 import qualified Data.Text as T
-import qualified ExampleSpec
+import qualified Example
 import System.FilePath ((<.>), (</>))
 import System.IO.Temp (withSystemTempDirectory)
 import Test.Hspec
@@ -31,7 +31,7 @@ main = hspec $ do
       junitGolden "prefixed" $
         setJUnitConfigSourcePathPrefix "lol/monorepo"
 
--- | Run @ExampleSpec.spec@ and compare XML to a golden file
+-- | Run @Example.spec@ and compare XML to a golden file
 junitGolden
   :: String
   -- ^ Unique name
@@ -46,7 +46,7 @@ junitGolden name modifyConfig = do
               setJUnitConfigOutputName "test.xml" $
                 defaultJUnitConfig "hspec-junit-format"
 
-    void $ runSpec' $ Formatter.use junitConfig ExampleSpec.spec
+    void $ runSpec' $ Formatter.use junitConfig Example.spec
     readNormalizedXML $ tmp </> "test.xml"
 
   pure

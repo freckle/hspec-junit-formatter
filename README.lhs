@@ -108,8 +108,8 @@ spec = describe "Addition" $ do
 ## Golden Testing
 
 This project's test suite uses [hspec-golden][] to generate an XML report for
-[`ExampleSpec.hs`](./tests/ExampleSpec.hs) and then compare that with golden XML
-files checked into the repository. If your work changes things in a
+[`Example.hs`](./tests/Example.hs) and then compare that with golden XML files
+checked into the repository. If your work changes things in a
 functionally-correct way, but that diverges from the golden XML files, you need
 to regenerate them.
 
