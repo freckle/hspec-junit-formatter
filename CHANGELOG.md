@@ -1,4 +1,10 @@
-## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.1.1.0...main)
+## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.1.2.0...main)
+
+## [v1.1.2.0](https://github.com/freckle/hspec-junit-formatter/compare/v1.1.1.0...v1.1.2.0)
+
+- Replace the string `{base}` by the basename of the current directory
+  (typically the package name) when reading any `JUNIT` environment variable
+  values.
 
 ## [v1.1.1.0](https://github.com/freckle/hspec-junit-formatter/compare/v1.1.0.2...v1.1.1.0)
 
