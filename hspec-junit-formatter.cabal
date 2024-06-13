@@ -142,6 +142,7 @@ test-suite spec
   main-is: Spec.hs
   other-modules:
       Example
+      SpecHook
       Test.Hspec.JUnit.Config.EnvSpec
       Test.Hspec.JUnit.FormatterSpec
       Paths_hspec_junit_formatter
