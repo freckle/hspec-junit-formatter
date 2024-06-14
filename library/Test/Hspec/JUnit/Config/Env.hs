@@ -10,7 +10,8 @@ module Test.Hspec.JUnit.Config.Env
 import Prelude
 
 import Data.Semigroup (Endo (..))
-import Data.Text (pack)
+import Data.Text (pack, unpack)
+import qualified Data.Text as T
 import System.Directory (getCurrentDirectory)
 import System.Environment (getEnvironment, lookupEnv)
 import System.FilePath (takeBaseName)
@@ -60,9 +61,4 @@ envPrefix :: String
 envPrefix = "JUNIT_"
 
 replaceBase :: String -> String -> String
-replaceBase base = go
- where
-  go = \case
-    [] -> []
-    '{' : 'b' : 'a' : 's' : 'e' : '}' : rest -> base <> go rest
-    c : rest -> c : go rest
+replaceBase base = unpack . T.replace "{base}" (pack base) . pack
