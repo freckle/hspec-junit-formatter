@@ -1,4 +1,8 @@
-## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.1.2.0...main)
+## [_Unreleased_](https://github.com/freckle/hspec-junit-formatter/compare/v1.1.2.1...main)
+
+## [v1.1.2.1](https://github.com/freckle/hspec-junit-formatter/compare/v1.1.2.0...v1.1.2.1)
+
+Relax version bounds
 
 ## [v1.1.2.0](https://github.com/freckle/hspec-junit-formatter/compare/v1.1.1.0...v1.1.2.0)
 
