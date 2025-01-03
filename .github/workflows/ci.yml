@@ -32,7 +32,7 @@ jobs:
           STACK_YAML: ${{ matrix.stack-yaml }}
 
       - if: success() || failure()
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v5
         with:
           report_paths: './junit.xml'
           require_tests: true
