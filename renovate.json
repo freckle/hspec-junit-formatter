@@ -2,5 +2,6 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>freckle/renovate-config"
-  ]
+  ],
+  "minimumReleaseAge": "0 days"
 }
