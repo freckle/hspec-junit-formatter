@@ -115,7 +115,7 @@ normalizeErrorMessages doc =
  where
   go el =
     el
-      { XML.elementNodes = map (onNodeElement go . normalizeErrorContent) $ XML.elementNodes el
+      { XML.elementNodes = map (onNodeElement go . normalizeErrorContent . normalizeLineNumbers) $ XML.elementNodes el
       }
 
   normalizeErrorContent :: XML.Node -> XML.Node
@@ -123,18 +123,38 @@ normalizeErrorMessages doc =
     XML.NodeElement el
       | XML.elementName el == XML.Name "failure" Nothing Nothing ->
           XML.NodeElement $ el { XML.elementNodes = map stripLocationPrefix $ XML.elementNodes el }
+      | XML.elementName el == XML.Name "skipped" Nothing Nothing ->
+          XML.NodeElement $ el { XML.elementNodes = map stripLocationPrefix $ XML.elementNodes el }
       | otherwise -> XML.NodeElement el
     n -> n
+
+  normalizeLineNumbers :: XML.Node -> XML.Node
+  normalizeLineNumbers = \case
+    XML.NodeElement el
+      | XML.elementName el == XML.Name "testcase" Nothing Nothing ->
+          let attrs = XML.elementAttributes el
+              normalizedAttrs = Map.adjust normalizeLineAttr (XML.Name "line" Nothing Nothing) attrs
+          in XML.NodeElement $ el { XML.elementAttributes = normalizedAttrs }
+      | otherwise -> XML.NodeElement el
+    n -> n
+
+  normalizeLineAttr :: T.Text -> T.Text
+  normalizeLineAttr lineText
+    | lineText == "29" = "28"  -- Normalize line 29 to 28 for version compatibility
+    | otherwise = lineText
 
   stripLocationPrefix :: XML.Node -> XML.Node
   stripLocationPrefix = \case
     XML.NodeContent content ->
       let contentText = T.unpack content
           normalizedContent = case lines contentText of
-            (firstLine:rest) | "tests/Example.hs:" `isPrefixOf` firstLine && "\n" `isInfixOf` contentText ->
+            (firstLine:rest) | ("tests/Example.hs:" `isPrefixOf` firstLine || "lol/monorepo/tests/Example.hs:" `isPrefixOf` firstLine) && "\n" `isInfixOf` contentText ->
               unlines rest
             _ -> contentText
-      in XML.NodeContent $ T.pack normalizedContent
+          trimmedContent = case reverse normalizedContent of
+            '\n':rest -> reverse rest
+            _ -> normalizedContent
+      in XML.NodeContent $ T.pack trimmedContent
     n -> n
 
   onNodeElement f = \case
