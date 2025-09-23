@@ -21,8 +21,7 @@ description: |
 ghc-options:
   - -fignore-optim-changes
   - -Weverything
-  - -Wno-all-missed-specialisations
-    -Wno-missed-specialisations
+  - -Wno-all-missed-specialisations -Wno-missed-specialisations
   - -Wno-missing-exported-signatures # re-enables missing-signatures
   - -Wno-missing-import-lists
   - -Wno-missing-local-signatures
@@ -109,4 +108,5 @@ tests:
     dependencies:
       - hspec
       - hspec-junit-formatter
+    build-tools:
       - markdown-unlit
