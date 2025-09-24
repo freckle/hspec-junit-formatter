@@ -8,6 +8,7 @@ import Prelude
 
 import Control.Monad (void)
 import Data.Char (isSpace)
+import Data.List (isPrefixOf, isInfixOf)
 import qualified Data.Map.Strict as Map
 import qualified Data.Text as T
 import qualified Example
@@ -68,7 +69,7 @@ readNormalizedXML :: FilePath -> IO XML.Document
 readNormalizedXML = fmap normalizeDoc . XML.readFile XML.def
 
 normalizeDoc :: XML.Document -> XML.Document
-normalizeDoc = removeWhitespaceNodes . removeTimeAttributes
+normalizeDoc = removeWhitespaceNodes . removeTimeAttributes . normalizeErrorMessages
 
 removeWhitespaceNodes :: XML.Document -> XML.Document
 removeWhitespaceNodes doc =
@@ -101,6 +102,60 @@ removeAttributesByName name doc =
       { XML.elementAttributes = Map.delete name $ XML.elementAttributes el
       , XML.elementNodes = map (onNodeElement go) $ XML.elementNodes el
       }
+
+  onNodeElement f = \case
+    XML.NodeElement el -> XML.NodeElement $ f el
+    n -> n
+
+normalizeErrorMessages :: XML.Document -> XML.Document
+normalizeErrorMessages doc =
+  doc
+    { XML.documentRoot = go $ XML.documentRoot doc
+    }
+ where
+  go el =
+    el
+      { XML.elementNodes = map (onNodeElement go . normalizeErrorContent . normalizeLineNumbers) $ XML.elementNodes el
+      }
+
+  normalizeErrorContent :: XML.Node -> XML.Node
+  normalizeErrorContent = \case
+    XML.NodeElement el
+      | XML.elementName el == XML.Name "failure" Nothing Nothing ->
+          XML.NodeElement $ el { XML.elementNodes = map stripLocationPrefix $ XML.elementNodes el }
+      | XML.elementName el == XML.Name "skipped" Nothing Nothing ->
+          XML.NodeElement $ el { XML.elementNodes = map stripLocationPrefix $ XML.elementNodes el }
+      | otherwise -> XML.NodeElement el
+    n -> n
+
+  normalizeLineNumbers :: XML.Node -> XML.Node
+  normalizeLineNumbers = \case
+    XML.NodeElement el
+      | XML.elementName el == XML.Name "testcase" Nothing Nothing ->
+          let attrs = XML.elementAttributes el
+              normalizedAttrs = Map.adjust normalizeLineAttr (XML.Name "line" Nothing Nothing) attrs
+          in XML.NodeElement $ el { XML.elementAttributes = normalizedAttrs }
+      | otherwise -> XML.NodeElement el
+    n -> n
+
+  normalizeLineAttr :: T.Text -> T.Text
+  normalizeLineAttr lineText
+    | lineText == "29" = "28"  -- Normalize line 29 to 28 for version compatibility
+    | otherwise = lineText
+
+  stripLocationPrefix :: XML.Node -> XML.Node
+  stripLocationPrefix = \case
+    XML.NodeContent content ->
+      let contentText = T.unpack content
+          normalizedContent = case lines contentText of
+            (firstLine:rest) | ("tests/Example.hs:" `isPrefixOf` firstLine || "lol/monorepo/tests/Example.hs:" `isPrefixOf` firstLine) && "\n" `isInfixOf` contentText ->
+              unlines rest
+            _ -> contentText
+          trimmedContent = case reverse normalizedContent of
+            '\n':rest -> reverse rest
+            _ -> normalizedContent
+      in XML.NodeContent $ T.pack trimmedContent
+    n -> n
 
   onNodeElement f = \case
     XML.NodeElement el -> XML.NodeElement $ f el

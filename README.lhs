@@ -13,7 +13,6 @@ A `JUnit` XML runner/formatter for [`hspec`](http://hspec.github.io/).
 
 module Main (main) where
 import Prelude
-import Text.Markdown.Unlit ()
 
 -- Used in a later example
 import qualified Test.Hspec.JUnit.Formatter.Env as FormatterEnv
