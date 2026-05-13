@@ -119,6 +119,20 @@ We maintain specific golden XML files for GHC 8.x vs 9.x, so you will need to
 re-run the test suite with at least one of each series to regenerate all the
 necessary files.
 
+## Release
+
+To trigger a release, merge a commit to `main` that follows [Conventional
+Commits][]. In short,
+
+- `fix:` to trigger a patch release
+- `feat:` to trigger a minor release
+- `<type>!:` or use a `BREAKING CHANGE:` footer to trigger a major release
+
+We don't enforce conventional commits generally (though you are free do so),
+it's only required if you want to trigger release.
+
+[conventional commits]: https://www.conventionalcommits.org/en/v1.0.0/#summary
+
 ---
 
 [LICENSE](./LICENSE)
