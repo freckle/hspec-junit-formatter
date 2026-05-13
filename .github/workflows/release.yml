@@ -2,7 +2,9 @@ name: Release
 
 on:
   push:
-    branches: main
+    branches:
+      - main
+      - rc/*
 
 jobs:
   release:
@@ -10,13 +12,19 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - id: tag
-        uses: freckle/haskell-tag-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Cache GHC installation
+        uses: actions/cache@v5
+        with:
+          path: "~/.stack"
+          key: ${{ runner.os }}-stack-${{ hashFiles('**/stack-lts20.yaml') }}
 
-      - if: steps.tag.outputs.tag
-        name: "Release to Hackage"
-        run: stack --stack-yaml stack-lts20.yaml upload --pvp-bounds lower .
+      - uses: cycjimmy/semantic-release-action@v4
+        with:
+          extra_plugins: |
+            conventional-changelog-conventionalcommits
+            semantic-release-stack-upload
         env:
+          FORCE_COLOR: 1
+          GITHUB_TOKEN: ${{ github.token }}
           HACKAGE_KEY: ${{ secrets.HACKAGE_UPLOAD_API_KEY }}
+          STACK_YAML: stack-lts20.yaml
