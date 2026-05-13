@@ -4,13 +4,13 @@ module Test.Hspec.JUnit.Render
 
 import Prelude
 
+import Conduit (ConduitT, awaitForever, mergeSource, yield, yieldMany, (.|))
 import Control.Monad.Catch (MonadThrow)
-import qualified Data.Array as Array
-import Data.Conduit (ConduitT, awaitForever, mergeSource, yield, (.|))
-import qualified Data.Conduit.List as CL
+import Data.Array qualified as Array
+import Data.Conduit.List qualified as CL
 import Data.Foldable (traverse_)
 import Data.Text (Text, pack)
-import qualified Data.Text as Text
+import Data.Text qualified as Text
 import Data.Time.ISO8601 (formatISO8601)
 import Data.XML.Types (Event)
 import Test.Hspec.JUnit.Schema
@@ -21,45 +21,45 @@ import Test.Hspec.JUnit.Schema
   , TestCase (..)
   )
 import Text.Printf
-import qualified Text.Regex.Base as Regex
-import qualified Text.Regex.TDFA.Text as Regex
+import Text.Regex.Base qualified as Regex
+import Text.Regex.TDFA.Text qualified as Regex
 import Text.XML.Stream.Render (attr, content, tag)
 
 renderJUnit :: MonadThrow m => Bool -> ConduitT Suites Event m ()
-renderJUnit shouldDropConsoleFormatting = awaitForever $ \Suites {..} ->
-  tag "testsuites" (attr "name" suitesName)
-    $ CL.sourceList suitesSuites
+renderJUnit shouldDropConsoleFormatting = awaitForever $ \s ->
+  tag "testsuites" (attr "name" s.suitesName)
+    $ yieldMany s.suitesSuites
       .| mergeSource idStream
       .| suite shouldDropConsoleFormatting
  where
   idStream = CL.iterate (+ 1) 0
 
 suite :: MonadThrow m => Bool -> ConduitT (Int, Suite) Event m ()
-suite shouldDropConsoleFormatting = awaitForever $ \(i, theSuite@Suite {..}) ->
-  tag "testsuite" (attributes i theSuite) $ do
+suite shouldDropConsoleFormatting = awaitForever $ \(i, s) ->
+  tag "testsuite" (attributes i s) $ do
     tag "properties" mempty mempty
-    CL.sourceList suiteCases .| do
+    yieldMany s.suiteCases .| do
       awaitForever $ \x -> yield x .| testCase shouldDropConsoleFormatting
  where
   -- TODO these need to be made real values
-  attributes i Suite {..} =
-    attr "name" suiteName
-      <> attr "package" suiteName
+  attributes i s =
+    attr "name" s.suiteName
+      <> attr "package" s.suiteName
       <> attr "id" (tshow i)
-      <> attr "time" (roundToStr $ sumDurations suiteCases)
-      <> attr "timestamp" (pack $ formatISO8601 suiteTimestamp)
+      <> attr "time" (roundToStr $ sumDurations s.suiteCases)
+      <> attr "timestamp" (pack $ formatISO8601 s.suiteTimestamp)
       <> attr "hostname" "localhost"
-      <> attr "tests" (tshow $ length suiteCases)
+      <> attr "tests" (tshow $ length s.suiteCases)
       <> attr
         "failures"
         ( tshow
-            $ length [() | Just Failure {} <- testCaseResult <$> suiteCases]
+            $ length [() | Just Failure {} <- (.testCaseResult) <$> s.suiteCases]
         )
       <> attr "errors" "0"
       <> attr
         "skipped"
         ( tshow
-            $ length [() | Just Skipped {} <- testCaseResult <$> suiteCases]
+            $ length [() | Just Skipped {} <- (.testCaseResult) <$> s.suiteCases]
         )
 
 tshow :: Show a => a -> Text
@@ -73,8 +73,8 @@ testCase shouldDropConsoleFormatting =
         .| result shouldDropConsoleFormatting
  where
   attributes mLocation className name duration =
-    maybe mempty (attr "file" . pack . locationFile) mLocation
-      <> maybe mempty (attr "line" . pack . show . locationLine) mLocation
+    maybe mempty (attr "file" . pack . (.locationFile)) mLocation
+      <> maybe mempty (attr "line" . pack . show . (.locationLine)) mLocation
       <> attr "name" name
       <> attr "classname" className
       <> attr "time" (roundToStr duration)
@@ -106,7 +106,7 @@ result shouldDropConsoleFormatting = awaitForever go
     | otherwise = input
 
 sumDurations :: [TestCase] -> Double
-sumDurations cases = sum $ testCaseDuration <$> cases
+sumDurations cases = sum $ (.testCaseDuration) <$> cases
 
 roundToStr :: PrintfArg a => a -> Text
 roundToStr = pack . printf "%0.9f"

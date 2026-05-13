@@ -11,7 +11,7 @@ import Prelude
 
 import Data.Semigroup (Endo (..))
 import Data.Text (pack, unpack)
-import qualified Data.Text as T
+import Data.Text qualified as T
 import System.Directory (getCurrentDirectory)
 import System.Environment (getEnvironment, lookupEnv)
 import System.FilePath (takeBaseName)

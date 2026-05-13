@@ -41,8 +41,8 @@ import Prelude
 
 import Data.Maybe (fromMaybe)
 import Test.Hspec.Api.Format.V1 as Api
-import qualified Test.Hspec.Core.Format as Core
-import qualified Test.Hspec.Core.Formatters.V2 as V2
+import Test.Hspec.Core.Format qualified as Core
+import Test.Hspec.Core.Formatters.V2 qualified as V2
 import Test.Hspec.Core.Runner as Core (Config (..))
 import Test.Hspec.JUnit.Config
 import Test.Hspec.JUnit.Format
