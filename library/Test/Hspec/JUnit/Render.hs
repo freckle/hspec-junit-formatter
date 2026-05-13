@@ -38,8 +38,7 @@ suite :: MonadThrow m => Bool -> ConduitT (Int, Suite) Event m ()
 suite shouldDropConsoleFormatting = awaitForever $ \(i, s) ->
   tag "testsuite" (attributes i s) $ do
     tag "properties" mempty mempty
-    yieldMany s.cases .| do
-      awaitForever $ \x -> yield x .| testCase shouldDropConsoleFormatting
+    yieldMany s.cases .| testCase shouldDropConsoleFormatting
  where
   -- TODO these need to be made real values
   attributes i s =
