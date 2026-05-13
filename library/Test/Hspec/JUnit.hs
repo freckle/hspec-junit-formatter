@@ -19,15 +19,13 @@ module Test.Hspec.JUnit
 
 import Prelude
 
+import Conduit (runConduitRes, sinkFile, yield, (.|))
 import Control.Applicative ((<|>))
-import Data.Conduit (runConduitRes, (.|))
-import Data.Conduit.Combinators (sinkFile)
-import Data.Conduit.List (sourceList)
 import Data.Functor ((<&>))
-import qualified Data.Map.Strict as Map
+import Data.Map.Strict qualified as Map
 import Data.Maybe (fromMaybe)
 import Data.Text (Text, pack, unpack)
-import qualified Data.Text as T
+import Data.Text qualified as T
 import Data.Time (getCurrentTime)
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath (splitFileName)
@@ -47,7 +45,7 @@ import Test.Hspec.Core.Spec (Spec)
 import Test.Hspec.JUnit.Config
 import Test.Hspec.JUnit.Config.Env
 import Test.Hspec.JUnit.Render (renderJUnit)
-import qualified Test.Hspec.JUnit.Schema as Schema
+import Test.Hspec.JUnit.Schema qualified as Schema
 import Text.XML.Stream.Render (def, renderBytes)
 
 -- | Like 'hspec' but adds JUNit functionality
@@ -122,7 +120,7 @@ junitFormat junitConfig _config = pure $ \case
           }
 
     runConduitRes
-      $ sourceList [output]
+      $ yield output
         .| renderJUnit dropConsoleFormatting
         .| renderBytes def
         .| sinkFile file
@@ -166,13 +164,13 @@ itemToTestCase applyPrefix group name item =
  where
   prefixLocation mLocation str = case mLocation of
     Nothing -> str
-    Just Location {..} ->
+    Just l ->
       mconcat
-        [ pack $ applyPrefix locationFile
+        [ pack $ applyPrefix l.locationFile
         , ":"
-        , pack $ show locationLine
+        , pack $ show l.locationLine
         , ":"
-        , pack $ show locationColumn
+        , pack $ show l.locationColumn
         , "\n"
         ]
         <> str
@@ -187,10 +185,10 @@ itemResultLocation item = case itemResult item of
   Failure mLocation _ -> mLocation
 
 toSchemaLocation :: (FilePath -> FilePath) -> Location -> Schema.Location
-toSchemaLocation applyPrefix Location {..} =
+toSchemaLocation applyPrefix l =
   Schema.Location
-    { Schema.locationFile = applyPrefix locationFile
-    , Schema.locationLine = fromIntegral $ max 0 locationLine
+    { Schema.locationFile = applyPrefix l.locationFile
+    , Schema.locationLine = fromIntegral $ max 0 l.locationLine
     }
 
 unSeconds :: Seconds -> Double

@@ -30,7 +30,7 @@ import Test.Hspec.Api.Format.V1 as Api
 import Test.Hspec.Core.Spec (runIO)
 import Test.Hspec.JUnit.Config
 import Test.Hspec.JUnit.Config.Env
-import qualified Test.Hspec.JUnit.Formatter as JUnit
+import Test.Hspec.JUnit.Formatter qualified as JUnit
 
 whenEnabled :: (SpecWith a -> SpecWith a) -> SpecWith a -> SpecWith a
 whenEnabled hook spec = do

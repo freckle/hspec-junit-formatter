@@ -1,6 +1,6 @@
 cabal-version: 1.18
 
--- This file has been generated from package.yaml by hpack version 0.38.1.
+-- This file has been generated from package.yaml by hpack version 0.39.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -45,30 +45,22 @@ library
   hs-source-dirs:
       library
   default-extensions:
-      BangPatterns
+      DataKinds
       DeriveAnyClass
-      DeriveFoldable
-      DeriveFunctor
-      DeriveGeneric
-      DeriveLift
-      DeriveTraversable
       DerivingStrategies
-      FlexibleContexts
-      FlexibleInstances
+      DerivingVia
+      DuplicateRecordFields
       GADTs
-      GeneralizedNewtypeDeriving
       LambdaCase
-      MultiParamTypeClasses
+      NoFieldSelectors
       NoImplicitPrelude
       NoMonomorphismRestriction
+      NoPostfixOperators
+      OverloadedRecordDot
       OverloadedStrings
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      StandaloneDeriving
-      TypeApplications
+      QuasiQuotes
       TypeFamilies
-  ghc-options: -fignore-optim-changes -Weverything -Wno-all-missed-specialisations -Wno-missed-specialisations -Wno-missing-exported-signatures -Wno-missing-import-lists -Wno-missing-local-signatures -Wno-monomorphism-restriction -Wno-safe -Wno-unsafe
+  ghc-options: -Weverything -Wno-all-missed-specialisations -Wno-missed-specialisations -Wno-missing-exported-signatures -Wno-missing-import-lists -Wno-missing-local-signatures -Wno-missing-safe-haskell-mode -Wno-monomorphism-restriction -Wno-prepositive-qualified-module -Wno-safe -Wno-unsafe
   build-depends:
       array
     , base <5
@@ -86,13 +78,11 @@ library
     , time
     , xml-conduit
     , xml-types
-  default-language: Haskell2010
+  default-language: GHC2021
+  if impl(ghc >= 9.8)
+    ghc-options: -Wno-missing-role-annotations
   if impl(ghc >= 9.2)
     ghc-options: -Wno-missing-kind-signatures
-  if impl(ghc >= 8.10)
-    ghc-options: -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module
-  if impl(ghc >= 8.8)
-    ghc-options: -fwrite-ide-info
 
 test-suite readme
   type: exitcode-stdio-1.0
@@ -100,43 +90,33 @@ test-suite readme
   other-modules:
       Paths_hspec_junit_formatter
   default-extensions:
-      BangPatterns
+      DataKinds
       DeriveAnyClass
-      DeriveFoldable
-      DeriveFunctor
-      DeriveGeneric
-      DeriveLift
-      DeriveTraversable
       DerivingStrategies
-      FlexibleContexts
-      FlexibleInstances
+      DerivingVia
+      DuplicateRecordFields
       GADTs
-      GeneralizedNewtypeDeriving
       LambdaCase
-      MultiParamTypeClasses
+      NoFieldSelectors
       NoImplicitPrelude
       NoMonomorphismRestriction
+      NoPostfixOperators
+      OverloadedRecordDot
       OverloadedStrings
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      StandaloneDeriving
-      TypeApplications
+      QuasiQuotes
       TypeFamilies
-  ghc-options: -fignore-optim-changes -Weverything -Wno-all-missed-specialisations -Wno-missed-specialisations -Wno-missing-exported-signatures -Wno-missing-import-lists -Wno-missing-local-signatures -Wno-monomorphism-restriction -Wno-safe -Wno-unsafe -pgmL markdown-unlit
+  ghc-options: -Weverything -Wno-all-missed-specialisations -Wno-missed-specialisations -Wno-missing-exported-signatures -Wno-missing-import-lists -Wno-missing-local-signatures -Wno-missing-safe-haskell-mode -Wno-monomorphism-restriction -Wno-prepositive-qualified-module -Wno-safe -Wno-unsafe -pgmL markdown-unlit
   build-tool-depends:
       markdown-unlit:markdown-unlit
   build-depends:
       base <5
     , hspec
     , hspec-junit-formatter
-  default-language: Haskell2010
+  default-language: GHC2021
+  if impl(ghc >= 9.8)
+    ghc-options: -Wno-missing-role-annotations
   if impl(ghc >= 9.2)
     ghc-options: -Wno-missing-kind-signatures
-  if impl(ghc >= 8.10)
-    ghc-options: -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module
-  if impl(ghc >= 8.8)
-    ghc-options: -fwrite-ide-info
 
 test-suite spec
   type: exitcode-stdio-1.0
@@ -150,30 +130,22 @@ test-suite spec
   hs-source-dirs:
       tests
   default-extensions:
-      BangPatterns
+      DataKinds
       DeriveAnyClass
-      DeriveFoldable
-      DeriveFunctor
-      DeriveGeneric
-      DeriveLift
-      DeriveTraversable
       DerivingStrategies
-      FlexibleContexts
-      FlexibleInstances
+      DerivingVia
+      DuplicateRecordFields
       GADTs
-      GeneralizedNewtypeDeriving
       LambdaCase
-      MultiParamTypeClasses
+      NoFieldSelectors
       NoImplicitPrelude
       NoMonomorphismRestriction
+      NoPostfixOperators
+      OverloadedRecordDot
       OverloadedStrings
-      RankNTypes
-      RecordWildCards
-      ScopedTypeVariables
-      StandaloneDeriving
-      TypeApplications
+      QuasiQuotes
       TypeFamilies
-  ghc-options: -fignore-optim-changes -Weverything -Wno-all-missed-specialisations -Wno-missed-specialisations -Wno-missing-exported-signatures -Wno-missing-import-lists -Wno-missing-local-signatures -Wno-monomorphism-restriction -Wno-safe -Wno-unsafe -threaded -rtsopts -O0 "-with-rtsopts=-N"
+  ghc-options: -Weverything -Wno-all-missed-specialisations -Wno-missed-specialisations -Wno-missing-exported-signatures -Wno-missing-import-lists -Wno-missing-local-signatures -Wno-missing-safe-haskell-mode -Wno-monomorphism-restriction -Wno-prepositive-qualified-module -Wno-safe -Wno-unsafe -threaded -rtsopts "-with-rtsopts=-N"
   build-depends:
       base <5
     , containers
@@ -184,10 +156,8 @@ test-suite spec
     , temporary
     , text
     , xml-conduit
-  default-language: Haskell2010
+  default-language: GHC2021
+  if impl(ghc >= 9.8)
+    ghc-options: -Wno-missing-role-annotations
   if impl(ghc >= 9.2)
     ghc-options: -Wno-missing-kind-signatures
-  if impl(ghc >= 8.10)
-    ghc-options: -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module
-  if impl(ghc >= 8.8)
-    ghc-options: -fwrite-ide-info

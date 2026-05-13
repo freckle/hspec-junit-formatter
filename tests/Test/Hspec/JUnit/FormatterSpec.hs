@@ -9,17 +9,17 @@ import Prelude
 import Control.Monad (void)
 import Data.Char (isSpace)
 import Data.List (isInfixOf, isPrefixOf)
-import qualified Data.Map.Strict as Map
-import qualified Data.Text as T
-import qualified Example
+import Data.Map.Strict qualified as Map
+import Data.Text qualified as T
+import Example qualified
 import System.FilePath ((<.>), (</>))
 import System.IO.Temp (withSystemTempDirectory)
 import Test.Hspec
 import Test.Hspec.Golden
 import Test.Hspec.JUnit.Config
-import qualified Test.Hspec.JUnit.Formatter as Formatter
+import Test.Hspec.JUnit.Formatter qualified as Formatter
 import Test.Hspec.Runner
-import qualified Text.XML as XML
+import Text.XML qualified as XML
 
 spec :: Spec
 spec = do

@@ -87,23 +87,23 @@ setJUnitConfigDropConsoleFormatting x config = config {junitConfigDropConsoleFor
 
 -- | Retrieve the full path to the generated report
 getJUnitConfigOutputFile :: JUnitConfig -> FilePath
-getJUnitConfigOutputFile JUnitConfig {..} =
+getJUnitConfigOutputFile c =
   fromMaybe
-    (junitConfigOutputDirectory </> junitConfigOutputName)
-    junitConfigOutputFile
+    (c.junitConfigOutputDirectory </> c.junitConfigOutputName)
+    c.junitConfigOutputFile
 
 -- | Retrieve the suite name given on construction
 getJUnitConfigSuiteName :: JUnitConfig -> Text
-getJUnitConfigSuiteName = junitConfigSuiteName
+getJUnitConfigSuiteName c = c.junitConfigSuiteName
 
 -- | Retrieve the function to apply to reported source paths
 --
 -- Will be 'id' if no prefix configured.
 getJUnitPrefixSourcePath :: JUnitConfig -> FilePath -> FilePath
-getJUnitPrefixSourcePath JUnitConfig {..} =
-  maybe id (</>) junitConfigSourcePathPrefix
+getJUnitPrefixSourcePath c =
+  maybe id (</>) c.junitConfigSourcePathPrefix
 
 -- | Retrieve whether console formatting characters should be dropped from
 -- failure reports.
 getJUnitConfigDropConsoleFormatting :: JUnitConfig -> Bool
-getJUnitConfigDropConsoleFormatting JUnitConfig {..} = junitConfigDropConsoleFormatting
+getJUnitConfigDropConsoleFormatting c = c.junitConfigDropConsoleFormatting

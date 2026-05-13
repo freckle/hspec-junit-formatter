@@ -19,54 +19,46 @@ description: |
   Allows hspec tests to write JUnit XML output for parsing in various tools.
 
 ghc-options:
-  - -fignore-optim-changes
   - -Weverything
-  - -Wno-all-missed-specialisations -Wno-missed-specialisations
+  - -Wno-all-missed-specialisations
+  - -Wno-missed-specialisations
   - -Wno-missing-exported-signatures # re-enables missing-signatures
   - -Wno-missing-import-lists
   - -Wno-missing-local-signatures
+  - -Wno-missing-safe-haskell-mode
   - -Wno-monomorphism-restriction
+  - -Wno-prepositive-qualified-module
   - -Wno-safe
   - -Wno-unsafe
 
 when:
+  - condition: "impl(ghc >= 9.8)"
+    ghc-options:
+      - -Wno-missing-role-annotations
   - condition: "impl(ghc >= 9.2)"
     ghc-options:
       - -Wno-missing-kind-signatures
-  - condition: "impl(ghc >= 8.10)"
-    ghc-options:
-      - -Wno-missing-safe-haskell-mode
-      - -Wno-prepositive-qualified-module
-  - condition: "impl(ghc >= 8.8)"
-    ghc-options:
-      - -fwrite-ide-info
 
 dependencies:
   - base < 5
 
+language: GHC2021
+
 default-extensions:
-  - BangPatterns
+  - DataKinds
   - DeriveAnyClass
-  - DeriveFoldable
-  - DeriveFunctor
-  - DeriveGeneric
-  - DeriveLift
-  - DeriveTraversable
   - DerivingStrategies
-  - FlexibleContexts
-  - FlexibleInstances
+  - DerivingVia
+  - DuplicateRecordFields
   - GADTs
-  - GeneralizedNewtypeDeriving
   - LambdaCase
-  - MultiParamTypeClasses
+  - NoFieldSelectors
   - NoImplicitPrelude
   - NoMonomorphismRestriction
+  - NoPostfixOperators
+  - OverloadedRecordDot
   - OverloadedStrings
-  - RankNTypes
-  - RecordWildCards
-  - ScopedTypeVariables
-  - StandaloneDeriving
-  - TypeApplications
+  - QuasiQuotes
   - TypeFamilies
 
 library:
@@ -92,7 +84,7 @@ tests:
   spec:
     main: Spec.hs
     source-dirs: tests
-    ghc-options: -threaded -rtsopts -O0 "-with-rtsopts=-N"
+    ghc-options: -threaded -rtsopts "-with-rtsopts=-N"
     dependencies:
       - containers
       - filepath
