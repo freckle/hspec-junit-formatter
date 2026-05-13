@@ -38,14 +38,14 @@ junit junitConfig _config = pure $ \case
       groups = groupItems paths
       output =
         Schema.Suites
-          { suitesName = suiteName
-          , suitesSuites =
+          { name = suiteName
+          , suites =
               groups <&> \(group, items) -> do
                 let suite xs =
                       Schema.Suite
-                        { suiteName = group
-                        , suiteTimestamp = time
-                        , suiteCases = xs
+                        { name = group
+                        , timestamp = time
+                        , cases = xs
                         }
                 suite $ uncurry (itemToTestCase applyPrefix group) <$> items
           }
@@ -71,13 +71,13 @@ itemToTestCase
   :: (FilePath -> FilePath) -> Text -> Text -> Item -> Schema.TestCase
 itemToTestCase applyPrefix group name item =
   Schema.TestCase
-    { testCaseLocation =
+    { location =
         toSchemaLocation applyPrefix
           <$> (itemResultLocation item <|> itemLocation item)
-    , testCaseClassName = group
-    , testCaseName = name
-    , testCaseDuration = unSeconds $ itemDuration item
-    , testCaseResult = case itemResult item of
+    , className = group
+    , name = name
+    , duration = unSeconds $ itemDuration item
+    , result = case itemResult item of
         Success -> Nothing
         Pending mLocation mMessage ->
           Just
@@ -97,11 +97,11 @@ itemToTestCase applyPrefix group name item =
     Nothing -> str
     Just l ->
       mconcat
-        [ pack $ applyPrefix l.locationFile
+        [ pack $ applyPrefix $ locationFile l
         , ":"
-        , pack $ show l.locationLine
+        , pack $ show $ locationLine l
         , ":"
-        , pack $ show l.locationColumn
+        , pack $ show $ locationColumn l
         , "\n"
         ]
         <> str
@@ -118,8 +118,8 @@ itemResultLocation item = case itemResult item of
 toSchemaLocation :: (FilePath -> FilePath) -> Location -> Schema.Location
 toSchemaLocation applyPrefix l =
   Schema.Location
-    { Schema.locationFile = applyPrefix l.locationFile
-    , Schema.locationLine = fromIntegral $ max 0 l.locationLine
+    { Schema.file = applyPrefix $ locationFile l
+    , Schema.line = fromIntegral $ max 0 $ locationLine l
     }
 
 unSeconds :: Seconds -> Double

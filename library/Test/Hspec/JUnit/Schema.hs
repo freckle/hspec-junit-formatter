@@ -13,30 +13,30 @@ import Data.Time (UTCTime)
 import Numeric.Natural
 
 data Suites = Suites
-  { suitesName :: Text
-  , suitesSuites :: [Suite]
+  { name :: Text
+  , suites :: [Suite]
   }
   deriving stock (Show)
 
 data Suite = Suite
-  { suiteName :: Text
-  , suiteTimestamp :: UTCTime
-  , suiteCases :: [TestCase]
+  { name :: Text
+  , timestamp :: UTCTime
+  , cases :: [TestCase]
   }
   deriving stock (Show)
 
 data TestCase = TestCase
-  { testCaseLocation :: Maybe Location
-  , testCaseClassName :: Text
-  , testCaseName :: Text
-  , testCaseDuration :: Double
-  , testCaseResult :: Maybe Result
+  { location :: Maybe Location
+  , className :: Text
+  , name :: Text
+  , duration :: Double
+  , result :: Maybe Result
   }
   deriving stock (Show)
 
 data Location = Location
-  { locationFile :: FilePath
-  , locationLine :: Natural
+  { file :: FilePath
+  , line :: Natural
   }
   deriving stock (Show)
 
