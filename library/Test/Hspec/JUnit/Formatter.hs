@@ -8,7 +8,7 @@
 -- import Test.Hspec.JUnit.Config
 -- import Test.Hspec.JUnit.Formatter qualified as Formatter
 --
--- -- | To only produce a JUnit file, silencing other output
+-- -- | To produce only a JUnit file, silencing other output
 -- hook :: Spec -> Spec
 -- hook = Formatter.use defaultJUnitConfig
 --
@@ -16,7 +16,7 @@
 -- hook :: Spec -> Spec
 -- hook = Formatter.add defaultJUnitConfig
 --
--- -- | To only produce, but only when @--format=junit@ is used
+-- -- | To produce only a JUnit file, and only when @--format=junit@ is used
 -- hook :: Spec -> Spec
 -- hook = Formatter.register defaultJUnitConfig
 -- @
