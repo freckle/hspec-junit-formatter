@@ -32,7 +32,6 @@ source-repository head
 
 library
   exposed-modules:
-      Test.Hspec.JUnit
       Test.Hspec.JUnit.Config
       Test.Hspec.JUnit.Config.Env
       Test.Hspec.JUnit.Format
