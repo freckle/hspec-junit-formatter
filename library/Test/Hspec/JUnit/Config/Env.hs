@@ -42,16 +42,16 @@ readJUnitConfig :: FilePath -> [(String, String)] -> JUnitConfig
 readJUnitConfig base env = modify $ defaultJUnitConfig $ pack base
  where
   modify =
-    appEndo $
-      foldMap
+    appEndo
+      $ foldMap
         Endo
         [ readEnv "OUTPUT_DIRECTORY" setJUnitConfigOutputDirectory
         , readEnv "OUTPUT_NAME" setJUnitConfigOutputName
         , readEnv "OUTPUT_FILE" setJUnitConfigOutputFile
         , readEnv "SUITE_NAME" $ setJUnitConfigSuiteName . pack
         , readEnv "SOURCE_PATH_PREFIX" setJUnitConfigSourcePathPrefix
-        , readEnv "DROP_CONSOLE_FORMATTING" $
-            setJUnitConfigDropConsoleFormatting . (== "1")
+        , readEnv "DROP_CONSOLE_FORMATTING"
+            $ setJUnitConfigDropConsoleFormatting . (== "1")
         ]
 
   readEnv name setter =
