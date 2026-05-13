@@ -24,12 +24,12 @@ import Data.Text (Text)
 import System.FilePath ((</>))
 
 data JUnitConfig = JUnitConfig
-  { junitConfigOutputDirectory :: FilePath
-  , junitConfigOutputName :: FilePath
-  , junitConfigOutputFile :: Maybe FilePath
-  , junitConfigSuiteName :: Text
-  , junitConfigSourcePathPrefix :: Maybe FilePath
-  , junitConfigDropConsoleFormatting :: Bool
+  { outputDirectory :: FilePath
+  , outputName :: FilePath
+  , outputFile :: Maybe FilePath
+  , suiteName :: Text
+  , sourcePathPrefix :: Maybe FilePath
+  , dropConsoleFormatting :: Bool
   }
 
 -- | Construct a 'JUnitConfig' given a suite name
@@ -38,35 +38,34 @@ data JUnitConfig = JUnitConfig
 defaultJUnitConfig :: Text -> JUnitConfig
 defaultJUnitConfig name =
   JUnitConfig
-    { junitConfigOutputDirectory = "."
-    , junitConfigOutputName = "junit.xml"
-    , junitConfigOutputFile = Nothing
-    , junitConfigSuiteName = name
-    , junitConfigSourcePathPrefix = Nothing
-    , junitConfigDropConsoleFormatting = False
+    { outputDirectory = "."
+    , outputName = "junit.xml"
+    , outputFile = Nothing
+    , suiteName = name
+    , sourcePathPrefix = Nothing
+    , dropConsoleFormatting = False
     }
 
 -- | Set the directory within which to generate the report
 --
 -- Default is current working directory.
 setJUnitConfigOutputDirectory :: FilePath -> JUnitConfig -> JUnitConfig
-setJUnitConfigOutputDirectory x config =
-  config {junitConfigOutputDirectory = x}
+setJUnitConfigOutputDirectory x config = config {outputDirectory = x}
 
 -- | Set the name for the generated report
 --
 -- Default is @junit.xml@.
 setJUnitConfigOutputName :: FilePath -> JUnitConfig -> JUnitConfig
-setJUnitConfigOutputName x config = config {junitConfigOutputName = x}
+setJUnitConfigOutputName x config = config {outputName = x}
 
 -- | Set the full path to the generated report
 --
 -- If given, the directory and name configurations are ignored.
 setJUnitConfigOutputFile :: FilePath -> JUnitConfig -> JUnitConfig
-setJUnitConfigOutputFile x config = config {junitConfigOutputFile = Just x}
+setJUnitConfigOutputFile x config = config {outputFile = Just x}
 
 setJUnitConfigSuiteName :: Text -> JUnitConfig -> JUnitConfig
-setJUnitConfigSuiteName x config = config {junitConfigSuiteName = x}
+setJUnitConfigSuiteName x config = config {suiteName = x}
 
 -- | Set a prefix to apply to source paths in the report
 --
@@ -74,8 +73,7 @@ setJUnitConfigSuiteName x config = config {junitConfigSuiteName = x}
 -- in a monorepository, and you need reported paths to be from the repository
 -- root.
 setJUnitConfigSourcePathPrefix :: FilePath -> JUnitConfig -> JUnitConfig
-setJUnitConfigSourcePathPrefix x config =
-  config {junitConfigSourcePathPrefix = Just x}
+setJUnitConfigSourcePathPrefix x config = config {sourcePathPrefix = Just x}
 
 -- | Set whether console formatting characters should be dropped from failure
 -- reports.
@@ -83,27 +81,23 @@ setJUnitConfigSourcePathPrefix x config =
 -- Default is False. Most XML processors will fail to parse the XML if it
 -- contains the ANSI control characters used by console formatting.
 setJUnitConfigDropConsoleFormatting :: Bool -> JUnitConfig -> JUnitConfig
-setJUnitConfigDropConsoleFormatting x config = config {junitConfigDropConsoleFormatting = x}
+setJUnitConfigDropConsoleFormatting x config = config {dropConsoleFormatting = x}
 
 -- | Retrieve the full path to the generated report
 getJUnitConfigOutputFile :: JUnitConfig -> FilePath
-getJUnitConfigOutputFile c =
-  fromMaybe
-    (c.junitConfigOutputDirectory </> c.junitConfigOutputName)
-    c.junitConfigOutputFile
+getJUnitConfigOutputFile c = fromMaybe (c.outputDirectory </> c.outputName) c.outputFile
 
 -- | Retrieve the suite name given on construction
 getJUnitConfigSuiteName :: JUnitConfig -> Text
-getJUnitConfigSuiteName c = c.junitConfigSuiteName
+getJUnitConfigSuiteName c = c.suiteName
 
 -- | Retrieve the function to apply to reported source paths
 --
 -- Will be 'id' if no prefix configured.
 getJUnitPrefixSourcePath :: JUnitConfig -> FilePath -> FilePath
-getJUnitPrefixSourcePath c =
-  maybe id (</>) c.junitConfigSourcePathPrefix
+getJUnitPrefixSourcePath c = maybe id (</>) c.sourcePathPrefix
 
 -- | Retrieve whether console formatting characters should be dropped from
 -- failure reports.
 getJUnitConfigDropConsoleFormatting :: JUnitConfig -> Bool
-getJUnitConfigDropConsoleFormatting c = c.junitConfigDropConsoleFormatting
+getJUnitConfigDropConsoleFormatting c = c.dropConsoleFormatting
