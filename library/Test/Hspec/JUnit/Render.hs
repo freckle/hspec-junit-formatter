@@ -27,8 +27,8 @@ import Text.XML.Stream.Render (attr, content, tag)
 
 renderJUnit :: MonadThrow m => Bool -> ConduitT Suites Event m ()
 renderJUnit shouldDropConsoleFormatting = awaitForever $ \Suites {..} ->
-  tag "testsuites" (attr "name" suitesName) $
-    CL.sourceList suitesSuites
+  tag "testsuites" (attr "name" suitesName)
+    $ CL.sourceList suitesSuites
       .| mergeSource idStream
       .| suite shouldDropConsoleFormatting
  where
@@ -52,14 +52,14 @@ suite shouldDropConsoleFormatting = awaitForever $ \(i, theSuite@Suite {..}) ->
       <> attr "tests" (tshow $ length suiteCases)
       <> attr
         "failures"
-        ( tshow $
-            length [() | Just Failure {} <- testCaseResult <$> suiteCases]
+        ( tshow
+            $ length [() | Just Failure {} <- testCaseResult <$> suiteCases]
         )
       <> attr "errors" "0"
       <> attr
         "skipped"
-        ( tshow $
-            length [() | Just Skipped {} <- testCaseResult <$> suiteCases]
+        ( tshow
+            $ length [() | Just Skipped {} <- testCaseResult <$> suiteCases]
         )
 
 tshow :: Show a => a -> Text
@@ -68,8 +68,8 @@ tshow = pack . show
 testCase :: MonadThrow m => Bool -> ConduitT TestCase Event m ()
 testCase shouldDropConsoleFormatting =
   awaitForever $ \(TestCase mLocation className name duration mResult) ->
-    tag "testcase" (attributes mLocation className name duration) $
-      traverse_ yield mResult
+    tag "testcase" (attributes mLocation className name duration)
+      $ traverse_ yield mResult
         .| result shouldDropConsoleFormatting
  where
   attributes mLocation className name duration =

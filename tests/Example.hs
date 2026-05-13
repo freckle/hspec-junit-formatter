@@ -5,9 +5,9 @@
 -- In fact, this sentence was added to retain them across a formatting change.
 module Example (spec) where
 
-import Control.Exception
 import Prelude
 
+import Control.Exception
 import Test.Hspec
 
 spec :: Spec

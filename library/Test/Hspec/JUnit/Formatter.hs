@@ -40,7 +40,6 @@ module Test.Hspec.JUnit.Formatter
 import Prelude
 
 import Data.Maybe (fromMaybe)
-
 import Test.Hspec.Api.Format.V1 as Api
 import qualified Test.Hspec.Core.Format as Core
 import qualified Test.Hspec.Core.Formatters.V2 as V2

@@ -121,8 +121,8 @@ junitFormat junitConfig _config = pure $ \case
                 suite $ uncurry (itemToTestCase applyPrefix group) <$> items
           }
 
-    runConduitRes $
-      sourceList [output]
+    runConduitRes
+      $ sourceList [output]
         .| renderJUnit dropConsoleFormatting
         .| renderBytes def
         .| sinkFile file
@@ -151,20 +151,17 @@ itemToTestCase applyPrefix group name item =
     , testCaseResult = case itemResult item of
         Success -> Nothing
         Pending mLocation mMessage ->
-          Just $
-            Schema.Skipped $
-              prefixLocation mLocation $
-                prefixInfo $
-                  maybe
-                    ""
-                    pack
-                    mMessage
+          Just
+            $ Schema.Skipped
+            $ prefixLocation mLocation
+            $ prefixInfo
+            $ maybe "" pack mMessage
         Failure mLocation reason ->
-          Just $
-            Schema.Failure "error" $
-              prefixLocation mLocation $
-                prefixInfo $
-                  reasonToText reason
+          Just
+            $ Schema.Failure "error"
+            $ prefixLocation mLocation
+            $ prefixInfo
+            $ reasonToText reason
     }
  where
   prefixLocation mLocation str = case mLocation of

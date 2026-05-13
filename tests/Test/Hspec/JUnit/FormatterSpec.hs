@@ -8,7 +8,7 @@ import Prelude
 
 import Control.Monad (void)
 import Data.Char (isSpace)
-import Data.List (isPrefixOf, isInfixOf)
+import Data.List (isInfixOf, isPrefixOf)
 import qualified Data.Map.Strict as Map
 import qualified Data.Text as T
 import qualified Example
@@ -23,12 +23,11 @@ import qualified Text.XML as XML
 
 spec :: Spec
 spec = do
-  it "matches golden file" $
+  it "matches golden file" $ do
     junitGolden "default" id
 
-  it "matches golden file with prefixing" $
-    junitGolden "prefixed" $
-      setJUnitConfigSourcePathPrefix "lol/monorepo"
+  it "matches golden file with prefixing" $ do
+    junitGolden "prefixed" $ setJUnitConfigSourcePathPrefix "lol/monorepo"
 
 -- | Run @Example.spec@ and compare XML to a golden file
 junitGolden
@@ -40,10 +39,10 @@ junitGolden
 junitGolden name modifyConfig = do
   actual <- withSystemTempDirectory "" $ \tmp -> do
     let junitConfig =
-          modifyConfig $
-            setJUnitConfigOutputDirectory tmp $
-              setJUnitConfigOutputName "test.xml" $
-                defaultJUnitConfig "hspec-junit-format"
+          modifyConfig
+            $ setJUnitConfigOutputDirectory tmp
+            $ setJUnitConfigOutputName "test.xml"
+            $ defaultJUnitConfig "hspec-junit-format"
 
     runSpec' $ Formatter.use junitConfig Example.spec
     readNormalizedXML $ tmp </> "test.xml"
@@ -115,16 +114,20 @@ normalizeErrorMessages doc =
  where
   go el =
     el
-      { XML.elementNodes = map (onNodeElement go . normalizeErrorContent . normalizeLineNumbers) $ XML.elementNodes el
+      { XML.elementNodes =
+          map (onNodeElement go . normalizeErrorContent . normalizeLineNumbers)
+            $ XML.elementNodes el
       }
 
   normalizeErrorContent :: XML.Node -> XML.Node
   normalizeErrorContent = \case
     XML.NodeElement el
       | XML.elementName el == XML.Name "failure" Nothing Nothing ->
-          XML.NodeElement $ el { XML.elementNodes = map stripLocationPrefix $ XML.elementNodes el }
+          XML.NodeElement
+            $ el {XML.elementNodes = map stripLocationPrefix $ XML.elementNodes el}
       | XML.elementName el == XML.Name "skipped" Nothing Nothing ->
-          XML.NodeElement $ el { XML.elementNodes = map stripLocationPrefix $ XML.elementNodes el }
+          XML.NodeElement
+            $ el {XML.elementNodes = map stripLocationPrefix $ XML.elementNodes el}
       | otherwise -> XML.NodeElement el
     n -> n
 
@@ -132,29 +135,37 @@ normalizeErrorMessages doc =
   normalizeLineNumbers = \case
     XML.NodeElement el
       | XML.elementName el == XML.Name "testcase" Nothing Nothing ->
-          let attrs = XML.elementAttributes el
-              normalizedAttrs = Map.adjust normalizeLineAttr (XML.Name "line" Nothing Nothing) attrs
-          in XML.NodeElement $ el { XML.elementAttributes = normalizedAttrs }
+          let
+            attrs = XML.elementAttributes el
+            normalizedAttrs = Map.adjust normalizeLineAttr (XML.Name "line" Nothing Nothing) attrs
+          in
+            XML.NodeElement $ el {XML.elementAttributes = normalizedAttrs}
       | otherwise -> XML.NodeElement el
     n -> n
 
   normalizeLineAttr :: T.Text -> T.Text
   normalizeLineAttr lineText
-    | lineText == "29" = "28"  -- Normalize line 29 to 28 for version compatibility
+    | lineText == "29" = "28" -- Normalize line 29 to 28 for version compatibility
     | otherwise = lineText
 
   stripLocationPrefix :: XML.Node -> XML.Node
   stripLocationPrefix = \case
     XML.NodeContent content ->
-      let contentText = T.unpack content
-          normalizedContent = case lines contentText of
-            (firstLine:rest) | ("tests/Example.hs:" `isPrefixOf` firstLine || "lol/monorepo/tests/Example.hs:" `isPrefixOf` firstLine) && "\n" `isInfixOf` contentText ->
-              unlines rest
-            _ -> contentText
-          trimmedContent = case reverse normalizedContent of
-            '\n':rest -> reverse rest
-            _ -> normalizedContent
-      in XML.NodeContent $ T.pack trimmedContent
+      let
+        contentText = T.unpack content
+        normalizedContent = case lines contentText of
+          (firstLine : rest)
+            | ( "tests/Example.hs:" `isPrefixOf` firstLine
+                  || "lol/monorepo/tests/Example.hs:" `isPrefixOf` firstLine
+              )
+                && "\n" `isInfixOf` contentText ->
+                unlines rest
+          _ -> contentText
+        trimmedContent = case reverse normalizedContent of
+          '\n' : rest -> reverse rest
+          _ -> normalizedContent
+      in
+        XML.NodeContent $ T.pack trimmedContent
     n -> n
 
   onNodeElement f = \case
