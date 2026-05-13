@@ -27,8 +27,8 @@ import Text.XML.Stream.Render (attr, content, tag)
 
 renderJUnit :: MonadThrow m => Bool -> ConduitT Suites Event m ()
 renderJUnit shouldDropConsoleFormatting = awaitForever $ \s ->
-  tag "testsuites" (attr "name" s.suitesName)
-    $ yieldMany s.suitesSuites
+  tag "testsuites" (attr "name" s.name)
+    $ yieldMany s.suites
       .| mergeSource idStream
       .| suite shouldDropConsoleFormatting
  where
@@ -38,29 +38,21 @@ suite :: MonadThrow m => Bool -> ConduitT (Int, Suite) Event m ()
 suite shouldDropConsoleFormatting = awaitForever $ \(i, s) ->
   tag "testsuite" (attributes i s) $ do
     tag "properties" mempty mempty
-    yieldMany s.suiteCases .| do
+    yieldMany s.cases .| do
       awaitForever $ \x -> yield x .| testCase shouldDropConsoleFormatting
  where
   -- TODO these need to be made real values
   attributes i s =
-    attr "name" s.suiteName
-      <> attr "package" s.suiteName
+    attr "name" s.name
+      <> attr "package" s.name
       <> attr "id" (tshow i)
-      <> attr "time" (roundToStr $ sumDurations s.suiteCases)
-      <> attr "timestamp" (pack $ formatISO8601 s.suiteTimestamp)
+      <> attr "time" (roundToStr $ sumDurations s.cases)
+      <> attr "timestamp" (pack $ formatISO8601 s.timestamp)
       <> attr "hostname" "localhost"
-      <> attr "tests" (tshow $ length s.suiteCases)
-      <> attr
-        "failures"
-        ( tshow
-            $ length [() | Just Failure {} <- (.testCaseResult) <$> s.suiteCases]
-        )
+      <> attr "tests" (tshow $ length s.cases)
+      <> attr "failures" (tshow $ length [() | Just Failure {} <- (.result) <$> s.cases])
       <> attr "errors" "0"
-      <> attr
-        "skipped"
-        ( tshow
-            $ length [() | Just Skipped {} <- (.testCaseResult) <$> s.suiteCases]
-        )
+      <> attr "skipped" (tshow $ length [() | Just Skipped {} <- (.result) <$> s.cases])
 
 tshow :: Show a => a -> Text
 tshow = pack . show
@@ -73,8 +65,8 @@ testCase shouldDropConsoleFormatting =
         .| result shouldDropConsoleFormatting
  where
   attributes mLocation className name duration =
-    maybe mempty (attr "file" . pack . (.locationFile)) mLocation
-      <> maybe mempty (attr "line" . pack . show . (.locationLine)) mLocation
+    maybe mempty (attr "file" . pack . (.file)) mLocation
+      <> maybe mempty (attr "line" . pack . show . (.line)) mLocation
       <> attr "name" name
       <> attr "classname" className
       <> attr "time" (roundToStr duration)
@@ -106,7 +98,7 @@ result shouldDropConsoleFormatting = awaitForever go
     | otherwise = input
 
 sumDurations :: [TestCase] -> Double
-sumDurations cases = sum $ (.testCaseDuration) <$> cases
+sumDurations cases = sum $ (.duration) <$> cases
 
 roundToStr :: PrintfArg a => a -> Text
 roundToStr = pack . printf "%0.9f"
