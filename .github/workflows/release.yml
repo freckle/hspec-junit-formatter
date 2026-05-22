@@ -18,7 +18,7 @@ jobs:
           path: "~/.stack"
           key: ${{ runner.os }}-stack-${{ hashFiles('**/stack-lts20.yaml') }}
 
-      - uses: cycjimmy/semantic-release-action@v4
+      - uses: cycjimmy/semantic-release-action@v6.0.0
         with:
           extra_plugins: |
             conventional-changelog-conventionalcommits
