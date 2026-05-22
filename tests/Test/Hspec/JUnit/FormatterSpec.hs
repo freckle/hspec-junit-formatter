@@ -53,8 +53,7 @@ junitGolden name modifyConfig = do
       , encodePretty = show
       , writeToFile = XML.writeFile XML.def
       , readFromFile = readNormalizedXML
-      , goldenFile =
-          "tests" </> "golden" </> name <> "-" <> ghcSuffix <.> "xml"
+      , goldenFile = "tests" </> "golden" </> name <.> "xml"
       , actualFile = Nothing
       , failFirstTime = False
       }
@@ -171,14 +170,3 @@ normalizeErrorMessages doc =
   onNodeElement f = \case
     XML.NodeElement el -> XML.NodeElement $ f el
     n -> n
-
--- GHC can change certain aspects, mainly about source-location, so we can
--- incorpate that by tracking separate Golden files as necessary
-ghcSuffix :: String
-#if __GLASGOW_HASKELL__ >= 900
-ghcSuffix = "ghc-9"
-#elif __GLASGOW_HASKELL__ >= 800
-ghcSuffix = "ghc-8"
-#else
--- Fail to compile on other GHCs
-#endif
