@@ -11,6 +11,7 @@ import Data.Char (isSpace)
 import Data.List (isInfixOf, isPrefixOf)
 import Data.Map.Strict qualified as Map
 import Data.Text qualified as T
+import Data.Text.Lazy qualified as LT
 import Example qualified
 import System.FilePath ((<.>), (</>))
 import System.IO.Temp (withSystemTempDirectory)
@@ -19,6 +20,7 @@ import Test.Hspec.Golden
 import Test.Hspec.JUnit.Config
 import Test.Hspec.JUnit.Formatter qualified as Formatter
 import Test.Hspec.Runner
+import Text.Pretty.Simple (pShowNoColor)
 import Text.XML qualified as XML
 
 spec :: Spec
@@ -50,7 +52,7 @@ junitGolden name modifyConfig = do
   pure
     Golden
       { output = actual
-      , encodePretty = show
+      , encodePretty = LT.unpack . pShowNoColor
       , writeToFile = XML.writeFile XML.def
       , readFromFile = readNormalizedXML
       , goldenFile = "tests" </> "golden" </> name <.> "xml"
