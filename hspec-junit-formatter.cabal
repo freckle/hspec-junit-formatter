@@ -150,6 +150,7 @@ test-suite spec
     , hspec
     , hspec-golden
     , hspec-junit-formatter
+    , pretty-simple
     , temporary
     , text
     , xml-conduit
