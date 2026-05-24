@@ -22,6 +22,7 @@ import Test.Hspec.JUnit.Formatter qualified as Formatter
 import Test.Hspec.Runner
 import Text.Pretty.Simple (pShowNoColor)
 import Text.XML qualified as XML
+import Text.XML.Stream.Render.Internal qualified as XML
 
 spec :: Spec
 spec = do
@@ -42,6 +43,7 @@ junitGolden name modifyConfig = do
   actual <- withSystemTempDirectory "" $ \tmp -> do
     let junitConfig =
           modifyConfig
+            $ setJUnitConfigPretty True
             $ setJUnitConfigOutputDirectory tmp
             $ setJUnitConfigOutputName "test.xml"
             $ defaultJUnitConfig "hspec-junit-format"
@@ -53,7 +55,7 @@ junitGolden name modifyConfig = do
     Golden
       { output = actual
       , encodePretty = LT.unpack . pShowNoColor
-      , writeToFile = XML.writeFile XML.def
+      , writeToFile = XML.writeFile (XML.def {XML.rsPretty = True})
       , readFromFile = readNormalizedXML
       , goldenFile = "tests" </> "golden" </> name <.> "xml"
       , actualFile = Nothing

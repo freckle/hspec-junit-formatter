@@ -94,7 +94,7 @@ tests:
       - pretty-simple
       - temporary
       - text
-      - xml-conduit
+      - xml-conduit >= 1.10.0.0 # rsPretty moved to .Internal module
   readme:
     main: README.lhs
     ghc-options: -pgmL markdown-unlit
