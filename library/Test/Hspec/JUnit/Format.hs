@@ -19,6 +19,7 @@ import Test.Hspec.JUnit.Config as Config
 import Test.Hspec.JUnit.Render (renderJUnit)
 import Test.Hspec.JUnit.Schema qualified as Schema
 import Text.XML.Stream.Render (def, renderBytes)
+import Text.XML.Stream.Render.Internal (rsPretty)
 
 junit :: JUnitConfig -> FormatConfig -> IO Format
 junit junitConfig _config = pure $ \case
@@ -53,13 +54,17 @@ junit junitConfig _config = pure $ \case
     runConduitRes
       $ yield output
         .| renderJUnit dropConsoleFormatting
-        .| renderBytes def
+        .| renderBytes renderConfig
         .| sinkFile file
  where
   file = getJUnitConfigOutputFile junitConfig
   suiteName = getJUnitConfigSuiteName junitConfig
   applyPrefix = getJUnitPrefixSourcePath junitConfig
   dropConsoleFormatting = getJUnitConfigDropConsoleFormatting junitConfig
+  renderConfig =
+    if getJUnitConfigPretty junitConfig
+      then def {rsPretty = True}
+      else def
 
 groupItems :: [(Path, Item)] -> [(Text, [(Text, Item)])]
 groupItems = Map.toList . Map.fromListWith (<>) . fmap group
