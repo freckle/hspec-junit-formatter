@@ -52,6 +52,7 @@ readJUnitConfig base env = modify $ defaultJUnitConfig $ pack base
         , readEnv "SOURCE_PATH_PREFIX" setJUnitConfigSourcePathPrefix
         , readEnv "DROP_CONSOLE_FORMATTING"
             $ setJUnitConfigDropConsoleFormatting . (== "1")
+        , readEnv "PRETTY" $ setJUnitConfigPretty . (== "1")
         ]
 
   readEnv name setter =

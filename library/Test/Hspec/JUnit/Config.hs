@@ -9,12 +9,14 @@ module Test.Hspec.JUnit.Config
   , setJUnitConfigSuiteName
   , setJUnitConfigSourcePathPrefix
   , setJUnitConfigDropConsoleFormatting
+  , setJUnitConfigPretty
 
     -- * Use
   , getJUnitConfigOutputFile
   , getJUnitConfigSuiteName
   , getJUnitPrefixSourcePath
   , getJUnitConfigDropConsoleFormatting
+  , getJUnitConfigPretty
   ) where
 
 import Prelude
@@ -30,6 +32,7 @@ data JUnitConfig = JUnitConfig
   , suiteName :: Text
   , sourcePathPrefix :: Maybe FilePath
   , dropConsoleFormatting :: Bool
+  , pretty :: Bool
   }
 
 -- | Construct a 'JUnitConfig' given a suite name
@@ -44,6 +47,7 @@ defaultJUnitConfig name =
     , suiteName = name
     , sourcePathPrefix = Nothing
     , dropConsoleFormatting = False
+    , pretty = False
     }
 
 -- | Set the directory within which to generate the report
@@ -83,6 +87,15 @@ setJUnitConfigSourcePathPrefix x config = config {sourcePathPrefix = Just x}
 setJUnitConfigDropConsoleFormatting :: Bool -> JUnitConfig -> JUnitConfig
 setJUnitConfigDropConsoleFormatting x config = config {dropConsoleFormatting = x}
 
+-- | Set whether the file should be pretty-printed
+--
+-- @xml-conduit@ can pretty-print the contents of the XML file in order to make
+-- it more human-readable. Note that this operation normalizes whitespace even
+-- within nodes. This may turn multi-line failure messages into one line, for
+-- example.
+setJUnitConfigPretty :: Bool -> JUnitConfig -> JUnitConfig
+setJUnitConfigPretty x config = config {pretty = x}
+
 -- | Retrieve the full path to the generated report
 getJUnitConfigOutputFile :: JUnitConfig -> FilePath
 getJUnitConfigOutputFile c = fromMaybe (c.outputDirectory </> c.outputName) c.outputFile
@@ -101,3 +114,7 @@ getJUnitPrefixSourcePath c = maybe id (</>) c.sourcePathPrefix
 -- failure reports.
 getJUnitConfigDropConsoleFormatting :: JUnitConfig -> Bool
 getJUnitConfigDropConsoleFormatting c = c.dropConsoleFormatting
+
+-- | Retrieve whether the file should be pretty-printed
+getJUnitConfigPretty :: JUnitConfig -> Bool
+getJUnitConfigPretty c = c.pretty
