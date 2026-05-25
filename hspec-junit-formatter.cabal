@@ -18,7 +18,9 @@ license:        MIT
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
+    tests/golden/default-base-4.21.xml
     tests/golden/default.xml
+    tests/golden/prefixed-base-4.21.xml
     tests/golden/prefixed.xml
 extra-doc-files:
     README.md

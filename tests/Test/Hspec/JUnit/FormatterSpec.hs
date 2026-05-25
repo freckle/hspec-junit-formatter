@@ -7,10 +7,7 @@ module Test.Hspec.JUnit.FormatterSpec
 import Prelude
 
 import Control.Monad (void)
-import Data.Char (isSpace)
-import Data.List (isInfixOf, isPrefixOf)
 import Data.Map.Strict qualified as Map
-import Data.Text qualified as T
 import Data.Text.Lazy qualified as LT
 import Example qualified
 import System.FilePath ((<.>), (</>))
@@ -57,7 +54,7 @@ junitGolden name modifyConfig = do
       , encodePretty = LT.unpack . pShowNoColor
       , writeToFile = XML.writeFile (XML.def {XML.rsPretty = True})
       , readFromFile = readNormalizedXML
-      , goldenFile = "tests" </> "golden" </> name <.> "xml"
+      , goldenFile = "tests" </> "golden" </> name <> suffix <.> "xml"
       , actualFile = Nothing
       , failFirstTime = False
       }
@@ -71,22 +68,7 @@ readNormalizedXML :: FilePath -> IO XML.Document
 readNormalizedXML = fmap normalizeDoc . XML.readFile XML.def
 
 normalizeDoc :: XML.Document -> XML.Document
-normalizeDoc = removeWhitespaceNodes . removeTimeAttributes . normalizeErrorMessages
-
-removeWhitespaceNodes :: XML.Document -> XML.Document
-removeWhitespaceNodes doc =
-  doc
-    { XML.documentRoot = go $ XML.documentRoot doc
-    }
- where
-  go el =
-    el {XML.elementNodes = concatMap filterWhitespace $ XML.elementNodes el}
-
-  filterWhitespace :: XML.Node -> [XML.Node]
-  filterWhitespace = \case
-    XML.NodeElement el -> [XML.NodeElement $ go el]
-    XML.NodeContent c | T.all isSpace c -> []
-    n -> [n]
+normalizeDoc = removeTimeAttributes
 
 -- | Remove volatile attributes so they don't invalidate comparison
 removeTimeAttributes :: XML.Document -> XML.Document
@@ -109,68 +91,11 @@ removeAttributesByName name doc =
     XML.NodeElement el -> XML.NodeElement $ f el
     n -> n
 
-normalizeErrorMessages :: XML.Document -> XML.Document
-normalizeErrorMessages doc =
-  doc
-    { XML.documentRoot = go $ XML.documentRoot doc
-    }
- where
-  go el =
-    el
-      { XML.elementNodes =
-          map (onNodeElement go . normalizeErrorContent . normalizeLineNumbers)
-            $ XML.elementNodes el
-      }
-
-  normalizeErrorContent :: XML.Node -> XML.Node
-  normalizeErrorContent = \case
-    XML.NodeElement el
-      | XML.elementName el == XML.Name "failure" Nothing Nothing ->
-          XML.NodeElement
-            $ el {XML.elementNodes = map stripLocationPrefix $ XML.elementNodes el}
-      | XML.elementName el == XML.Name "skipped" Nothing Nothing ->
-          XML.NodeElement
-            $ el {XML.elementNodes = map stripLocationPrefix $ XML.elementNodes el}
-      | otherwise -> XML.NodeElement el
-    n -> n
-
-  normalizeLineNumbers :: XML.Node -> XML.Node
-  normalizeLineNumbers = \case
-    XML.NodeElement el
-      | XML.elementName el == XML.Name "testcase" Nothing Nothing ->
-          let
-            attrs = XML.elementAttributes el
-            normalizedAttrs = Map.adjust normalizeLineAttr (XML.Name "line" Nothing Nothing) attrs
-          in
-            XML.NodeElement $ el {XML.elementAttributes = normalizedAttrs}
-      | otherwise -> XML.NodeElement el
-    n -> n
-
-  normalizeLineAttr :: T.Text -> T.Text
-  normalizeLineAttr lineText
-    | lineText == "29" = "28" -- Normalize line 29 to 28 for version compatibility
-    | otherwise = lineText
-
-  stripLocationPrefix :: XML.Node -> XML.Node
-  stripLocationPrefix = \case
-    XML.NodeContent content ->
-      let
-        contentText = T.unpack content
-        normalizedContent = case lines contentText of
-          (firstLine : rest)
-            | ( "tests/Example.hs:" `isPrefixOf` firstLine
-                  || "lol/monorepo/tests/Example.hs:" `isPrefixOf` firstLine
-              )
-                && "\n" `isInfixOf` contentText ->
-                unlines rest
-          _ -> contentText
-        trimmedContent = case reverse normalizedContent of
-          '\n' : rest -> reverse rest
-          _ -> normalizedContent
-      in
-        XML.NodeContent $ T.pack trimmedContent
-    n -> n
-
-  onNodeElement f = \case
-    XML.NodeElement el -> XML.NodeElement $ f el
-    n -> n
+-- Store a separate golden for newer base because throwIO's behavior changed
+-- such that different location data is present and so our output changes
+suffix :: String
+#if MIN_VERSION_base(4,21,0)
+suffix = "-base-4.21"
+#else
+suffix = ""
+#endif
