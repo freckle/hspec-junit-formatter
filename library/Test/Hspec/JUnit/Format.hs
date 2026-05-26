@@ -61,10 +61,7 @@ junit junitConfig _config = pure $ \case
   suiteName = getJUnitConfigSuiteName junitConfig
   applyPrefix = getJUnitPrefixSourcePath junitConfig
   dropConsoleFormatting = getJUnitConfigDropConsoleFormatting junitConfig
-  renderConfig =
-    if getJUnitConfigPretty junitConfig
-      then def {rsPretty = True}
-      else def
+  renderConfig = def {rsPretty = getJUnitConfigPretty junitConfig}
 
 groupItems :: [(Path, Item)] -> [(Text, [(Text, Item)])]
 groupItems = Map.toList . Map.fromListWith (<>) . fmap group
