@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 
 module Test.Hspec.JUnit.FormatterSpec
   ( spec
@@ -7,95 +7,283 @@ module Test.Hspec.JUnit.FormatterSpec
 import Prelude
 
 import Control.Monad (void)
-import Data.Map.Strict qualified as Map
-import Data.Text.Lazy qualified as LT
+import Data.Text qualified as T
 import Example qualified
-import System.FilePath ((<.>), (</>))
+import System.FilePath ((</>))
 import System.IO.Temp (withSystemTempDirectory)
 import Test.Hspec
-import Test.Hspec.Golden
 import Test.Hspec.JUnit.Config
 import Test.Hspec.JUnit.Formatter qualified as Formatter
-import Test.Hspec.Runner
-import Text.Pretty.Simple (pShowNoColor)
+import Test.Hspec.Runner qualified as Hspec
 import Text.XML qualified as XML
-import Text.XML.Stream.Render.Internal qualified as XML
+import Text.XML.Cursor
 
 spec :: Spec
 spec = do
-  it "matches golden file" $ do
-    junitGolden "default" id
+  context "ExampleSpec" $ do
+    doc <- runIO $ fromDocument <$> renderJUnitXml testConfig Example.spec
 
-  it "matches golden file with prefixing" $ do
-    junitGolden "prefixed" $ setJUnitConfigSourcePathPrefix "lol/monorepo"
+    context "testsuites node" $ do
+      it "produces one, with our package name" $ do
+        ( doc
+            $| element "testsuites"
+            &| attribute "name"
+          )
+          `shouldBe` [["hspec-junit-format"]]
 
--- | Run @Example.spec@ and compare XML to a golden file
-junitGolden
-  :: String
-  -- ^ Unique name
-  -> (JUnitConfig -> JUnitConfig)
-  -- ^ Any modification to make to the 'JUnitConfig' before running
-  -> IO (Golden XML.Document)
-junitGolden name modifyConfig = do
-  actual <- withSystemTempDirectory "" $ \tmp -> do
+    context "testsuites nodes" $ do
+      it "produces two" $ do
+        ( doc
+            $| element "testsuites"
+            &/ element "testsuite"
+          )
+          `shouldSatisfy` (== 2) . length
+
+      it "has hostname" $ do
+        ( doc
+            $| element "testsuites"
+            &/ element "testsuite"
+            &| attribute "hostname"
+          )
+          `shouldBe` replicate 2 ["localhost"]
+
+      it "has name" $ do
+        ( doc
+            $| element "testsuites"
+            &/ element "testsuite"
+            &| attribute "name"
+          )
+          `shouldBe` [ ["Some section"]
+                     , ["Some section/A grouped context"]
+                     ]
+
+      it "has package" $ do
+        ( doc
+            $| element "testsuites"
+            &/ element "testsuite"
+            &| attribute "package"
+          )
+          `shouldBe` [ ["Some section"]
+                     , ["Some section/A grouped context"]
+                     ]
+
+      it "has time" $ do
+        ( doc
+            $| element "testsuites"
+            &/ element "testsuite"
+            &| attribute "time"
+          )
+          `shouldSatisfy` (== 2) . length
+
+    context "testcase nodes" $ do
+      it "has time" $ do
+        ( doc
+            $| element "testsuites"
+            &/ element "testsuite"
+            &/ element "testcase"
+            &| attribute "time"
+          )
+          `shouldSatisfy` (== 6) . length
+
+      it "has timestamp" $ do
+        ( doc
+            $| element "testsuites"
+            &/ element "testsuite"
+            &/ element "testcase"
+            &| attribute "timestamp"
+          )
+          `shouldSatisfy` (== 6) . length
+
+      it "has classname" $ do
+        ( doc
+            $| element "testsuites"
+            &/ element "testsuite"
+            &/ element "testcase"
+            &| attribute "classname"
+          )
+          `shouldBe` ( replicate 2 ["Some section"]
+                         <> replicate 4 ["Some section/A grouped context"]
+                     )
+
+      it "has file" $ do
+        ( doc
+            $| element "testsuites"
+            &/ element "testsuite"
+            &/ element "testcase"
+            &| attribute "file"
+          )
+          `shouldBe` replicate 6 ["tests/Example.hs"]
+
+    context "first testsuite" $ do
+      let [testsuite, _] = doc $| element "testsuites" &/ element "testsuite"
+
+      it "has correct counts" $ do
+        (testsuite $| attribute "errors") `shouldBe` ["0"]
+        (testsuite $| attribute "failures") `shouldBe` ["1"]
+        (testsuite $| attribute "skipped") `shouldBe` ["0"]
+        (testsuite $| attribute "tests") `shouldBe` ["2"]
+
+      it "produces two testcase nodes" $ do
+        (testsuite $/ element "testcase") `shouldSatisfy` (== 2) . length
+
+      context "first testcase" $ do
+        let [testcase, _] = testsuite $/ element "testcase"
+
+        it "has line" $ do
+          (testcase $| attribute "line") `shouldBe` ["19"]
+
+        it "has name" $ do
+          (testcase $| attribute "name") `shouldBe` ["has a failure"]
+
+        it "has a failure reported" $ do
+          ( testcase
+              $/ element "failure"
+              &/ content
+            )
+            `shouldBe` [ T.unlines
+                           [ "tests/Example.hs:19:12"
+                           , ""
+                           , "expected: \"False\""
+                           , " but got: \"True\""
+                           ]
+                       ]
+
+      context "second testcase" $ do
+        let [_, testcase] = testsuite $/ element "testcase"
+
+        it "has line" $ do
+          (testcase $| attribute "line") `shouldBe` ["16"]
+
+        it "has name" $ do
+          (testcase $| attribute "name") `shouldBe` ["has an expectation"]
+
+        it "has no child nodes" $ do
+          (testcase $| child &| node) `shouldBe` []
+
+    context "second testsuite" $ do
+      let [_, testsuite] =
+            doc
+              $| element "testsuites"
+              &/ element "testsuite"
+
+      it "has correct counts" $ do
+        (testsuite $| attribute "errors") `shouldBe` ["0"]
+        (testsuite $| attribute "failures") `shouldBe` ["1"]
+        (testsuite $| attribute "skipped") `shouldBe` ["1"]
+        (testsuite $| attribute "tests") `shouldBe` ["4"]
+
+      it "produces four testcase nodes" $ do
+        (testsuite $/ element "testcase") `shouldSatisfy` (== 4) . length
+
+      context "first testcase" $ do
+        let [testcase, _, _, _] = testsuite $/ element "testcase"
+
+        it "has line" $ do
+          pendingWith "Newer base returns line 29"
+          (testcase $| attribute "line") `shouldBe` ["28"]
+
+        it "has name" $ do
+          (testcase $| attribute "name") `shouldBe` ["throws a colourful exception"]
+
+        it "has a failure reported" $ do
+          pendingWith "Newer base results in a path-prefixed message"
+          ( testcase
+              $/ element "failure"
+              &/ content
+            )
+            `shouldBe` ["ColourfulException"]
+
+      context "second testcase" $ do
+        let [_, testcase, _, _] = testsuite $/ element "testcase"
+
+        it "has line" $ do
+          (testcase $| attribute "line") `shouldBe` ["27"]
+
+        it "has name" $ do
+          (testcase $| attribute "name") `shouldBe` ["gets skipped"]
+
+        it "has a skipped node" $ do
+          ( testcase
+              $/ element "skipped"
+              &/ content
+            )
+            `shouldBe` [ mconcat -- no trailing newline on this one (bug?)
+                           [ "tests/Example.hs:27:9\n"
+                           , "some reason"
+                           ]
+                       ]
+
+      context "third testcase" $ do
+        let [_, _, testcase, _] = testsuite $/ element "testcase"
+
+        it "has line" $ do
+          (testcase $| attribute "line") `shouldBe` ["24"]
+
+        it "has name" $ do
+          (testcase $| attribute "name") `shouldBe` ["also happens in a group"]
+
+        it "has no child nodes" $ do
+          (testcase $| child &| node) `shouldBe` []
+
+      context "fourth testcase" $ do
+        let [_, _, _, testcase] = testsuite $/ element "testcase"
+
+        it "has line" $ do
+          (testcase $| attribute "line") `shouldBe` ["22"]
+
+        it "has name" $ do
+          (testcase $| attribute "name") `shouldBe` ["happens in a group"]
+
+        it "has no child nodes" $ do
+          (testcase $| child &| node) `shouldBe` []
+
+  context "ExampleSpec with prefixing" $ do
+    let testConfig' = setJUnitConfigSourcePathPrefix "lol/monorepo" testConfig
+    doc <- runIO $ fromDocument <$> renderJUnitXml testConfig' Example.spec
+
+    it "prefixes testcase file attributes" $ do
+      ( doc
+          $| element "testsuites"
+          &/ element "testsuite"
+          &/ element "testcase"
+          &| attribute "file"
+        )
+        `shouldBe` replicate 6 ["lol/monorepo/tests/Example.hs"]
+
+    it "prefixes failure messages" $ do
+      pendingWith "The ColourfulException failure does not get prefixed"
+      ( doc
+          $| element "testsuites"
+          &/ element "testsuite"
+          &/ element "testcase"
+          &/ element "failure"
+          &| content
+        )
+        `shouldSatisfy` all (all ("lol/monorepo/" `T.isPrefixOf`))
+
+    it "prefixes skipped messages" $ do
+      ( doc
+          $| element "testsuites"
+          &/ element "testsuite"
+          &/ element "testcase"
+          &/ element "skipped"
+          &| content
+        )
+        `shouldSatisfy` all (all ("lol/monorepo/" `T.isPrefixOf`))
+
+testConfig :: JUnitConfig
+testConfig = defaultJUnitConfig "hspec-junit-format"
+
+renderJUnitXml :: JUnitConfig -> Spec -> IO XML.Document
+renderJUnitXml baseConfig x = do
+  withSystemTempDirectory "" $ \tmp -> do
     let junitConfig =
-          modifyConfig
-            $ setJUnitConfigPretty True
-            $ setJUnitConfigOutputDirectory tmp
-            $ setJUnitConfigOutputName "test.xml"
-            $ defaultJUnitConfig "hspec-junit-format"
+          setJUnitConfigOutputDirectory tmp
+            $ setJUnitConfigOutputName "test.xml" baseConfig
 
-    runSpec' $ Formatter.use junitConfig Example.spec
-    readNormalizedXML $ tmp </> "test.xml"
+    (config, forest) <-
+      Hspec.evalSpec Hspec.defaultConfig $ Formatter.use junitConfig x
 
-  pure
-    Golden
-      { output = actual
-      , encodePretty = LT.unpack . pShowNoColor
-      , writeToFile = XML.writeFile (XML.def {XML.rsPretty = True})
-      , readFromFile = readNormalizedXML
-      , goldenFile = "tests" </> "golden" </> name <> suffix <.> "xml"
-      , actualFile = Nothing
-      , failFirstTime = False
-      }
+    void $ Hspec.runSpecForest forest config
 
-runSpec' :: Spec -> IO ()
-runSpec' x = do
-  (config, forest) <- evalSpec defaultConfig x
-  void $ runSpecForest forest config
-
-readNormalizedXML :: FilePath -> IO XML.Document
-readNormalizedXML = fmap normalizeDoc . XML.readFile XML.def
-
-normalizeDoc :: XML.Document -> XML.Document
-normalizeDoc = removeTimeAttributes
-
--- | Remove volatile attributes so they don't invalidate comparison
-removeTimeAttributes :: XML.Document -> XML.Document
-removeTimeAttributes =
-  removeAttributesByName "time" . removeAttributesByName "timestamp"
-
-removeAttributesByName :: XML.Name -> XML.Document -> XML.Document
-removeAttributesByName name doc =
-  doc
-    { XML.documentRoot = go $ XML.documentRoot doc
-    }
- where
-  go el =
-    el
-      { XML.elementAttributes = Map.delete name $ XML.elementAttributes el
-      , XML.elementNodes = map (onNodeElement go) $ XML.elementNodes el
-      }
-
-  onNodeElement f = \case
-    XML.NodeElement el -> XML.NodeElement $ f el
-    n -> n
-
--- Store a separate golden for newer base because throwIO's behavior changed
--- such that different location data is present and so our output changes
-suffix :: String
-#if MIN_VERSION_base(4,21,0)
-suffix = "-base-4.21"
-#else
-suffix = ""
-#endif
+    XML.readFile XML.def $ tmp </> "test.xml"

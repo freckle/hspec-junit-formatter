@@ -86,12 +86,9 @@ tests:
     source-dirs: tests
     ghc-options: -threaded -rtsopts "-with-rtsopts=-N"
     dependencies:
-      - containers
       - filepath
       - hspec
-      - hspec-golden
       - hspec-junit-formatter
-      - pretty-simple
       - temporary
       - text
       - xml-conduit >= 1.10.0.0 # rsPretty moved to .Internal module
