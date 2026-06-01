@@ -17,11 +17,6 @@ copyright:      2021 Renaissance Learning Inc
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
-extra-source-files:
-    tests/golden/default-base-4.21.xml
-    tests/golden/default.xml
-    tests/golden/prefixed-base-4.21.xml
-    tests/golden/prefixed.xml
 extra-doc-files:
     README.md
     CHANGELOG.md
@@ -147,12 +142,9 @@ test-suite spec
   ghc-options: -Weverything -Wno-all-missed-specialisations -Wno-missed-specialisations -Wno-missing-exported-signatures -Wno-missing-import-lists -Wno-missing-local-signatures -Wno-missing-safe-haskell-mode -Wno-monomorphism-restriction -Wno-prepositive-qualified-module -Wno-safe -Wno-unsafe -threaded -rtsopts "-with-rtsopts=-N"
   build-depends:
       base <5
-    , containers
     , filepath
     , hspec
-    , hspec-golden
     , hspec-junit-formatter
-    , pretty-simple
     , temporary
     , text
     , xml-conduit >=1.10.0.0
