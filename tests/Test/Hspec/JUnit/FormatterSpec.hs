@@ -278,13 +278,21 @@ spec = do
         it "has name" $ do
           (testcase $| attribute "name") `shouldBe` ["throws a colourful exception"]
 
-        it "has a failure reported" $ do
-          pendingWith "Newer base results in a path-prefixed message"
-          ( testcase
-              $/ element "failure"
-              &/ content
-            )
-            `shouldBe` ["ColourfulException"]
+        context "error content" $ do
+          let [el] = testcase $/ element "error"
+
+          it "strips escapes from a message attribute" $ do
+            -- Annoying, but Hspec has tied our hands here
+            (el $| attribute "type") `shouldBe` ["SomeException"]
+            (el $| attribute "message") `shouldBe` ["ColourfulException"]
+
+          it "does not strip escapes in content" $ do
+            let [c] = el $/ content
+
+            take 2 (T.lines c)
+              `shouldBe` [ "\ESC[32mColour\ESC[31mful\ESC[0mException"
+                         , "HasCallStack backtrace:"
+                         ]
 
   context "ExampleSpec with prefixing" $ do
     let testConfig' = setJUnitConfigSourcePathPrefix "lol/monorepo" testConfig

@@ -181,7 +181,7 @@ unSeconds (Seconds d) = pack $ show $ realToFrac @_ @Nano d
 -- * Drop console formatting (always)
 -- * Extra-escape unsupported characters (e.g @\a@ becomes @\\a@)
 unAttr :: (a -> Text) -> Attr a -> Text
-unAttr f = dropConsoleFormatting . escapeIllegal . f . (.unwrap)
+unAttr f = escapeIllegal . dropConsoleFormatting . f . (.unwrap)
 
 escapeIllegal :: Text -> Text
 escapeIllegal =
