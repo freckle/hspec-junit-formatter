@@ -307,6 +307,24 @@ spec = do
         )
         `shouldBe` replicate 6 ["lol/monorepo/tests/Example.hs"]
 
+  context "ExampleSpec with dropConsoleFormatting" $ do
+    let testConfig' = setJUnitConfigDropConsoleFormatting True testConfig
+    doc <- runIO $ fromDocument <$> renderJUnitXml testConfig' Example.spec
+
+    it "drops console formatting in text nodes" $ do
+      let [c] =
+            doc
+              $| element "testsuites"
+              &/ element "testsuite"
+              &/ element "testcase"
+              &/ element "error"
+              &/ content
+
+      take 2 (T.lines c)
+        `shouldBe` [ "ColourfulException"
+                   , "HasCallStack backtrace:"
+                   ]
+
 testConfig :: JUnitConfig
 testConfig = defaultJUnitConfig "hspec-junit-format"
 
