@@ -97,7 +97,7 @@ spec = do
           )
           `shouldBe` [["hspec-junit-format"]]
 
-    context "testsuites nodes" $ do
+    context "testsuite nodes" $ do
       it "produces two" $ do
         ( doc
             $| element "testsuites"
@@ -154,7 +154,7 @@ spec = do
           )
           `shouldBe` replicate 6 ["tests/Example.hs"]
 
-      it "has names" $ do
+      it "has name" $ do
         ( doc
             $| element "testsuites"
             &/ element "testsuite"
