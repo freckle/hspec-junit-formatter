@@ -8,6 +8,7 @@ import Conduit (ConduitT)
 import Control.Monad (unless)
 import Control.Monad.Reader (MonadReader (..), asks)
 import Data.Array qualified as Array
+import Data.Fixed (Nano)
 import Data.Foldable (traverse_)
 import Data.Semigroup (Endo (..))
 import Data.Text (Text, pack)
@@ -16,7 +17,6 @@ import Data.Time.ISO8601 (formatISO8601)
 import Data.XML.Types (Event)
 import Test.Hspec.JUnit.Config
 import Test.Hspec.JUnit.Schema
-import Text.Printf
 import Text.Regex.Base qualified as Regex
 import Text.Regex.TDFA.Text (Regex)
 import Text.XML.Stream.Render (attr, content, optionalAttr, tag)
@@ -172,7 +172,7 @@ renderContent c = do
   content $ clean $ c.unwrap
 
 unSeconds :: Seconds -> Text
-unSeconds (Seconds d) = pack $ printf "%0.9f" d
+unSeconds (Seconds d) = pack $ show $ realToFrac @_ @Nano d
 
 -- | Safely render an attribute
 --

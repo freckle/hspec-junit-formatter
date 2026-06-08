@@ -7,6 +7,8 @@ module Test.Hspec.JUnit.FormatterSpec
 import Prelude
 
 import Control.Monad (void)
+import Data.Fixed (Micro, Nano)
+import Data.Text (Text, unpack)
 import Data.Text qualified as T
 import Example qualified
 import System.FilePath ((</>))
@@ -15,6 +17,7 @@ import Test.Hspec
 import Test.Hspec.JUnit.Config
 import Test.Hspec.JUnit.Formatter qualified as Formatter
 import Test.Hspec.Runner qualified as Hspec
+import Text.Read (readMaybe)
 import Text.XML qualified as XML
 import Text.XML.Cursor
 
@@ -22,6 +25,45 @@ spec :: Spec
 spec = do
   context "ExampleSpec" $ do
     doc <- runIO $ fromDocument <$> renderJUnitXml testConfig Example.spec
+
+    context "time attributes" $ do
+      it "sums correctly on testsuites and testsuite" $ do
+        let
+          -- Do the summation at Nano...
+          readNano :: Text -> Nano
+          readNano = maybe 0 realToFrac . readMaybe @Double . unpack
+
+          -- ...but truncate to Micro for comparison
+          readTimes :: [[Text]] -> Micro
+          readTimes = realToFrac . sum . concatMap (map readNano)
+
+          suitesTime :: Micro
+          suitesTime =
+            readTimes
+              $ doc
+                $| element "testsuites"
+                &| attribute "time"
+
+          suiteTimes :: Micro
+          suiteTimes =
+            readTimes
+              $ doc
+                $| element "testsuites"
+                &/ element "testsuite"
+                &| attribute "time"
+
+          casesTimes :: Micro
+          casesTimes =
+            readTimes
+              $ doc
+                $| element "testsuites"
+                &/ element "testsuite"
+                &/ element "testcase"
+                &| attribute "time"
+
+        suitesTime `shouldSatisfy` (> 0)
+        suitesTime `shouldBe` suiteTimes
+        suitesTime `shouldBe` casesTimes
 
     context "testsuites node" $ do
       it "produces one, with our package name" $ do
@@ -48,14 +90,6 @@ spec = do
           `shouldBe` [ ["Some section"]
                      , ["Some section/A grouped context"]
                      ]
-
-      it "has time" $ do
-        ( doc
-            $| element "testsuites"
-            &/ element "testsuite"
-            &| attribute "time"
-          )
-          `shouldSatisfy` (== 2) . length
 
     context "testcase nodes" $ do
       it "has time" $ do
