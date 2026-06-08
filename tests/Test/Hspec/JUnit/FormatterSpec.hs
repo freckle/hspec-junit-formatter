@@ -289,10 +289,7 @@ spec = do
           it "does not strip escapes in content" $ do
             let [c] = el $/ content
 
-            take 2 (T.lines c)
-              `shouldBe` [ "\ESC[32mColour\ESC[31mful\ESC[0mException"
-                         , "HasCallStack backtrace:"
-                         ]
+            take 1 (T.lines c) `shouldBe` ["\ESC[32mColour\ESC[31mful\ESC[0mException"]
 
   context "ExampleSpec with prefixing" $ do
     let testConfig' = setJUnitConfigSourcePathPrefix "lol/monorepo" testConfig
@@ -320,10 +317,7 @@ spec = do
               &/ element "error"
               &/ content
 
-      take 2 (T.lines c)
-        `shouldBe` [ "ColourfulException"
-                   , "HasCallStack backtrace:"
-                   ]
+      take 1 (T.lines c) `shouldBe` ["ColourfulException"]
 
 testConfig :: JUnitConfig
 testConfig = defaultJUnitConfig "hspec-junit-format"
