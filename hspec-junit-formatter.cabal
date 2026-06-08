@@ -145,6 +145,7 @@ test-suite spec
     , filepath
     , hspec
     , hspec-junit-formatter
+    , iso8601-time
     , temporary
     , text
     , xml-conduit >=1.10.0.0

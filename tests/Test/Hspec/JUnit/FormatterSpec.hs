@@ -8,8 +8,10 @@ import Prelude
 
 import Control.Monad (void)
 import Data.Fixed (Micro, Nano)
+import Data.Maybe (isJust)
 import Data.Text (Text, unpack)
 import Data.Text qualified as T
+import Data.Time.ISO8601 (parseISO8601)
 import Example qualified
 import System.FilePath ((</>))
 import System.IO.Temp (withSystemTempDirectory)
@@ -64,6 +66,28 @@ spec = do
         suitesTime `shouldSatisfy` (> 0)
         suitesTime `shouldBe` suiteTimes
         suitesTime `shouldBe` casesTimes
+
+    context "timestamp attributes" $ do
+      it "has the same timestamp on testsuites and testsuite" $ do
+        let
+          [suitesTimestamp] =
+            concatMap (map (parseISO8601 . unpack))
+              $ doc
+                $| element "testsuites"
+                &| attribute "timestamp"
+
+          [suite1Timestamp, suite2Timestamp] =
+            concatMap (map (parseISO8601 . unpack))
+              $ doc
+                $| element "testsuites"
+                &/ element "testsuite"
+                &| attribute "timestamp"
+
+        suitesTimestamp `shouldSatisfy` isJust
+        suite1Timestamp `shouldSatisfy` isJust
+        suite2Timestamp `shouldSatisfy` isJust
+        suite1Timestamp `shouldBe` suitesTimestamp
+        suite2Timestamp `shouldBe` suitesTimestamp
 
     context "testsuites node" $ do
       it "produces one, with our package name" $ do
