@@ -200,10 +200,15 @@ getSuiteTotals s = foldMap getSuiteChildTotals s.children
 
 getSuiteChildTotals :: TestsuiteChild -> SuiteTotals
 getSuiteChildTotals = \case
-  TestsuiteTestcase tc -> case tc.child of
-    TestcaseEmpty -> mempty {tests = 1, time = Sum tc.time, file = First tc.file}
-    TestcaseSkipped {} -> mempty {tests = 1, skipped = 1, time = Sum tc.time, file = First tc.file}
-    TestcaseFailure {} -> mempty {tests = 1, failures = 1, time = Sum tc.time, file = First tc.file}
-    TestcaseError {} -> mempty {tests = 1, errors = 1, time = Sum tc.time, file = First tc.file}
+  TestsuiteTestcase tc ->
+    let
+      base :: SuiteTotals
+      base = mempty {tests = 1, time = Sum tc.time, file = First tc.file}
+    in
+      case tc.child of
+        TestcaseEmpty -> base
+        TestcaseSkipped {} -> base {skipped = 1}
+        TestcaseFailure {} -> base {failures = 1}
+        TestcaseError {} -> base {errors = 1}
   TestsuiteTestsuite s -> getSuiteTotals s
   _ -> mempty
