@@ -7,7 +7,11 @@ module Test.Hspec.JUnit.FormatterSpec
 import Prelude
 
 import Control.Monad (void)
+import Data.Fixed (Micro, Nano)
+import Data.Maybe (isJust)
+import Data.Text (Text, unpack)
 import Data.Text qualified as T
+import Data.Time.ISO8601 (parseISO8601)
 import Example qualified
 import System.FilePath ((</>))
 import System.IO.Temp (withSystemTempDirectory)
@@ -15,6 +19,7 @@ import Test.Hspec
 import Test.Hspec.JUnit.Config
 import Test.Hspec.JUnit.Formatter qualified as Formatter
 import Test.Hspec.Runner qualified as Hspec
+import Text.Read (readMaybe)
 import Text.XML qualified as XML
 import Text.XML.Cursor
 
@@ -22,6 +27,67 @@ spec :: Spec
 spec = do
   context "ExampleSpec" $ do
     doc <- runIO $ fromDocument <$> renderJUnitXml testConfig Example.spec
+
+    context "time attributes" $ do
+      it "sums correctly on testsuites and testsuite" $ do
+        let
+          -- Do the summation at Nano...
+          readNano :: Text -> Nano
+          readNano = maybe 0 realToFrac . readMaybe @Double . unpack
+
+          -- ...but truncate to Micro for comparison
+          readTimes :: [[Text]] -> Micro
+          readTimes = realToFrac . sum . concatMap (map readNano)
+
+          suitesTime :: Micro
+          suitesTime =
+            readTimes
+              $ doc
+                $| element "testsuites"
+                &| attribute "time"
+
+          suiteTimes :: Micro
+          suiteTimes =
+            readTimes
+              $ doc
+                $| element "testsuites"
+                &/ element "testsuite"
+                &| attribute "time"
+
+          casesTimes :: Micro
+          casesTimes =
+            readTimes
+              $ doc
+                $| element "testsuites"
+                &/ element "testsuite"
+                &/ element "testcase"
+                &| attribute "time"
+
+        suitesTime `shouldSatisfy` (> 0)
+        suitesTime `shouldBe` suiteTimes
+        suitesTime `shouldBe` casesTimes
+
+    context "timestamp attributes" $ do
+      it "has the same timestamp on testsuites and testsuite" $ do
+        let
+          [suitesTimestamp] =
+            concatMap (map (parseISO8601 . unpack))
+              $ doc
+                $| element "testsuites"
+                &| attribute "timestamp"
+
+          [suite1Timestamp, suite2Timestamp] =
+            concatMap (map (parseISO8601 . unpack))
+              $ doc
+                $| element "testsuites"
+                &/ element "testsuite"
+                &| attribute "timestamp"
+
+        suitesTimestamp `shouldSatisfy` isJust
+        suite1Timestamp `shouldSatisfy` isJust
+        suite2Timestamp `shouldSatisfy` isJust
+        suite1Timestamp `shouldBe` suitesTimestamp
+        suite2Timestamp `shouldBe` suitesTimestamp
 
     context "testsuites node" $ do
       it "produces one, with our package name" $ do
@@ -31,21 +97,13 @@ spec = do
           )
           `shouldBe` [["hspec-junit-format"]]
 
-    context "testsuites nodes" $ do
+    context "testsuite nodes" $ do
       it "produces two" $ do
         ( doc
             $| element "testsuites"
             &/ element "testsuite"
           )
           `shouldSatisfy` (== 2) . length
-
-      it "has hostname" $ do
-        ( doc
-            $| element "testsuites"
-            &/ element "testsuite"
-            &| attribute "hostname"
-          )
-          `shouldBe` replicate 2 ["localhost"]
 
       it "has name" $ do
         ( doc
@@ -56,24 +114,6 @@ spec = do
           `shouldBe` [ ["Some section"]
                      , ["Some section/A grouped context"]
                      ]
-
-      it "has package" $ do
-        ( doc
-            $| element "testsuites"
-            &/ element "testsuite"
-            &| attribute "package"
-          )
-          `shouldBe` [ ["Some section"]
-                     , ["Some section/A grouped context"]
-                     ]
-
-      it "has time" $ do
-        ( doc
-            $| element "testsuites"
-            &/ element "testsuite"
-            &| attribute "time"
-          )
-          `shouldSatisfy` (== 2) . length
 
     context "testcase nodes" $ do
       it "has time" $ do
@@ -114,6 +154,21 @@ spec = do
           )
           `shouldBe` replicate 6 ["tests/Example.hs"]
 
+      it "has name" $ do
+        ( doc
+            $| element "testsuites"
+            &/ element "testsuite"
+            &/ element "testcase"
+            &| attribute "name"
+          )
+          `shouldBe` [ ["has an expectation"]
+                     , ["has a failure"]
+                     , ["happens in a group"]
+                     , ["also happens in a group"]
+                     , ["gets skipped"]
+                     , ["throws a colourful exception"]
+                     ]
+
     context "first testsuite" $ do
       let [testsuite, _] = doc $| element "testsuites" &/ element "testsuite"
 
@@ -130,6 +185,18 @@ spec = do
         let [testcase, _] = testsuite $/ element "testcase"
 
         it "has line" $ do
+          (testcase $| attribute "line") `shouldBe` ["16"]
+
+        it "has name" $ do
+          (testcase $| attribute "name") `shouldBe` ["has an expectation"]
+
+        it "has no child nodes" $ do
+          (testcase $| child &| node) `shouldBe` []
+
+      context "second testcase" $ do
+        let [_, testcase] = testsuite $/ element "testcase"
+
+        it "has line" $ do
           (testcase $| attribute "line") `shouldBe` ["19"]
 
         it "has name" $ do
@@ -141,24 +208,10 @@ spec = do
               &/ content
             )
             `shouldBe` [ T.unlines
-                           [ "tests/Example.hs:19:12"
-                           , ""
-                           , "expected: \"False\""
+                           [ "Expected: \"False\""
                            , " but got: \"True\""
                            ]
                        ]
-
-      context "second testcase" $ do
-        let [_, testcase] = testsuite $/ element "testcase"
-
-        it "has line" $ do
-          (testcase $| attribute "line") `shouldBe` ["16"]
-
-        it "has name" $ do
-          (testcase $| attribute "name") `shouldBe` ["has an expectation"]
-
-        it "has no child nodes" $ do
-          (testcase $| child &| node) `shouldBe` []
 
     context "second testsuite" $ do
       let [_, testsuite] =
@@ -167,8 +220,8 @@ spec = do
               &/ element "testsuite"
 
       it "has correct counts" $ do
-        (testsuite $| attribute "errors") `shouldBe` ["0"]
-        (testsuite $| attribute "failures") `shouldBe` ["1"]
+        (testsuite $| attribute "errors") `shouldBe` ["1"]
+        (testsuite $| attribute "failures") `shouldBe` ["0"]
         (testsuite $| attribute "skipped") `shouldBe` ["1"]
         (testsuite $| attribute "tests") `shouldBe` ["4"]
 
@@ -179,42 +232,16 @@ spec = do
         let [testcase, _, _, _] = testsuite $/ element "testcase"
 
         it "has line" $ do
-          pendingWith "Newer base returns line 29"
-          (testcase $| attribute "line") `shouldBe` ["28"]
+          (testcase $| attribute "line") `shouldBe` ["22"]
 
         it "has name" $ do
-          (testcase $| attribute "name") `shouldBe` ["throws a colourful exception"]
+          (testcase $| attribute "name") `shouldBe` ["happens in a group"]
 
-        it "has a failure reported" $ do
-          pendingWith "Newer base results in a path-prefixed message"
-          ( testcase
-              $/ element "failure"
-              &/ content
-            )
-            `shouldBe` ["ColourfulException"]
+        it "has no child nodes" $ do
+          (testcase $| child &| node) `shouldBe` []
 
       context "second testcase" $ do
         let [_, testcase, _, _] = testsuite $/ element "testcase"
-
-        it "has line" $ do
-          (testcase $| attribute "line") `shouldBe` ["27"]
-
-        it "has name" $ do
-          (testcase $| attribute "name") `shouldBe` ["gets skipped"]
-
-        it "has a skipped node" $ do
-          ( testcase
-              $/ element "skipped"
-              &/ content
-            )
-            `shouldBe` [ mconcat -- no trailing newline on this one (bug?)
-                           [ "tests/Example.hs:27:9\n"
-                           , "some reason"
-                           ]
-                       ]
-
-      context "third testcase" $ do
-        let [_, _, testcase, _] = testsuite $/ element "testcase"
 
         it "has line" $ do
           (testcase $| attribute "line") `shouldBe` ["24"]
@@ -225,17 +252,44 @@ spec = do
         it "has no child nodes" $ do
           (testcase $| child &| node) `shouldBe` []
 
+      context "third testcase" $ do
+        let [_, _, testcase, _] = testsuite $/ element "testcase"
+
+        it "has line" $ do
+          (testcase $| attribute "line") `shouldBe` ["27"]
+
+        it "has name" $ do
+          (testcase $| attribute "name") `shouldBe` ["gets skipped"]
+
+        it "has a skipped node" $ do
+          ( testcase
+              $/ element "skipped"
+              &| attribute "message"
+            )
+            `shouldBe` [["some reason"]]
+
       context "fourth testcase" $ do
         let [_, _, _, testcase] = testsuite $/ element "testcase"
 
         it "has line" $ do
-          (testcase $| attribute "line") `shouldBe` ["22"]
+          pendingWith "Newer base returns line 29"
+          (testcase $| attribute "line") `shouldBe` ["28"]
 
         it "has name" $ do
-          (testcase $| attribute "name") `shouldBe` ["happens in a group"]
+          (testcase $| attribute "name") `shouldBe` ["throws a colourful exception"]
 
-        it "has no child nodes" $ do
-          (testcase $| child &| node) `shouldBe` []
+        context "error content" $ do
+          let [el] = testcase $/ element "error"
+
+          it "strips escapes from a message attribute" $ do
+            -- Annoying, but Hspec has tied our hands here
+            (el $| attribute "type") `shouldBe` ["SomeException"]
+            (el $| attribute "message") `shouldBe` ["ColourfulException"]
+
+          it "does not strip escapes in content" $ do
+            let [c] = el $/ content
+
+            take 1 (T.lines c) `shouldBe` ["\ESC[32mColour\ESC[31mful\ESC[0mException"]
 
   context "ExampleSpec with prefixing" $ do
     let testConfig' = setJUnitConfigSourcePathPrefix "lol/monorepo" testConfig
@@ -250,26 +304,20 @@ spec = do
         )
         `shouldBe` replicate 6 ["lol/monorepo/tests/Example.hs"]
 
-    it "prefixes failure messages" $ do
-      pendingWith "The ColourfulException failure does not get prefixed"
-      ( doc
-          $| element "testsuites"
-          &/ element "testsuite"
-          &/ element "testcase"
-          &/ element "failure"
-          &| content
-        )
-        `shouldSatisfy` all (all ("lol/monorepo/" `T.isPrefixOf`))
+  context "ExampleSpec with dropConsoleFormatting" $ do
+    let testConfig' = setJUnitConfigDropConsoleFormatting True testConfig
+    doc <- runIO $ fromDocument <$> renderJUnitXml testConfig' Example.spec
 
-    it "prefixes skipped messages" $ do
-      ( doc
-          $| element "testsuites"
-          &/ element "testsuite"
-          &/ element "testcase"
-          &/ element "skipped"
-          &| content
-        )
-        `shouldSatisfy` all (all ("lol/monorepo/" `T.isPrefixOf`))
+    it "drops console formatting in text nodes" $ do
+      let [c] =
+            doc
+              $| element "testsuites"
+              &/ element "testsuite"
+              &/ element "testcase"
+              &/ element "error"
+              &/ content
+
+      take 1 (T.lines c) `shouldBe` ["ColourfulException"]
 
 testConfig :: JUnitConfig
 testConfig = defaultJUnitConfig "hspec-junit-format"

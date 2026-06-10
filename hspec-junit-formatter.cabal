@@ -59,15 +59,15 @@ library
       array
     , base <5
     , conduit
-    , containers
     , directory
-    , exceptions
     , filepath
     , hspec-api
     , hspec-core >=2.10.0
     , iso8601-time
+    , mtl
     , regex-base
     , regex-tdfa
+    , semigroups
     , text
     , time
     , xml-conduit
@@ -145,6 +145,7 @@ test-suite spec
     , filepath
     , hspec
     , hspec-junit-formatter
+    , iso8601-time
     , temporary
     , text
     , xml-conduit >=1.10.0.0
