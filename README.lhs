@@ -54,6 +54,26 @@ hook3 :: Spec -> Spec
 hook3 = Formatter.add $ defaultJUnitConfig "test-suite"
 ```
 
+### Mixing Formatters
+
+In addition to the formatter named `junit`, this library also registers
+formatters named `{formatter}+junit` for every existing formatter. This allows
+doing something like `--format progress+junit` to produce output with `progress`
+while also producing a JUnit file though `junit`.
+
+The `add` hook can be thought of like `--format checks+junit`, so this extra
+registration allows for similar "add" behavior on top of non-default formatters.
+
+Once registered, they can be seen in Hspec's `--help`:
+
+```console
+  -f NAME  --format=NAME           use a custom formatter; this can be one of
+                                   junit, checks+junit, specdoc+junit,
+                                   progress+junit, failed-examples+junit,
+                                   silent+junit, checks, specdoc, progress,
+                                   failed-examples or silent
+```
+
 ### Environment Configuration
 
 To configure things via @JUNIT_@-prefixed environment variables, import
