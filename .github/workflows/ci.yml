@@ -30,8 +30,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: freckle/stack-action@v5
+        with:
+          stack-build-arguments-test: >-
+            --test-arguments='--format progress+junit'
         env:
-          JUNIT_ENABLED: 1
           STACK_YAML: ${{ matrix.stack-yaml }}
 
       - if: success() || failure()

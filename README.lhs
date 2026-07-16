@@ -96,7 +96,7 @@ before calling `hspec` in `main`:
 
 ```haskell
 main :: IO ()
-main = hspec $ FormatterEnv.whenEnabled FormatterEnv.add spec
+main = hspec $ FormatterEnv.register spec -- or use, or add
 
 spec :: Spec
 spec = describe "Addition" $ do
