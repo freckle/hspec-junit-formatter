@@ -45,7 +45,6 @@ hook2 :: Spec -> Spec
 hook2 = Formatter.register $ defaultJUnitConfig "test-suite"
 ```
 
-
 ### Adding a JUnit report
 
 To produce a JUnit report _in addition to normal output_, use `add`:
@@ -103,21 +102,6 @@ spec = describe "Addition" $ do
   it "adds" $ do
     2 + 2 `shouldBe` (4 :: Int)
 ```
-
-## Golden Testing
-
-This project's test suite uses [hspec-golden][] to generate an XML report for
-[`Example.hs`](./tests/Example.hs) and then compare that with golden XML files
-checked into the repository. If your work changes things in a
-functionally-correct way, but that diverges from the golden XML files, you need
-to regenerate them.
-
-1. Run `rm tests/golden*.xml`
-2. Run the specs again
-
-We maintain specific golden XML files for GHC 8.x vs 9.x, so you will need to
-re-run the test suite with at least one of each series to regenerate all the
-necessary files.
 
 ## Release
 

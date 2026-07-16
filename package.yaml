@@ -10,9 +10,6 @@ extra-doc-files:
   - README.md
   - CHANGELOG.md
 
-extra-source-files:
-  - tests/golden/**/*.xml
-
 category: Testing
 synopsis: A JUnit XML runner/formatter for hspec
 description: |
