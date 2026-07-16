@@ -21,6 +21,12 @@
 -- hook = Formatter.register defaultJUnitConfig
 -- @
 --
+-- __NOTE__: In addition to registering the @junit@ formatter, all functions of
+-- this module will register @{formatter}+junit@ formatters for every existing
+-- available @formatter@. This allows you to produce JUnit files in addition to
+-- non-default formats. For example, to produce output using @progress@ along
+-- with a JUnit file, use @--format progress+junit@.
+--
 -- See also,
 --
 -- - https://hspec.github.io/hspec-discover.html#spec-hooks
@@ -49,18 +55,35 @@ import Test.Hspec.JUnit.Format
 
 -- | Register 'junit' as an available formatter and use it by default
 use :: JUnitConfig -> SpecWith a -> SpecWith a
-use config = (modifyConfig (useFormatter $ formatter config) >>)
+use config = (modifyConfig (useFormatter f . registerAdditions f) >>)
+ where
+  f = formatter config
 
 -- | Register 'junit', and use it /in addition/ to the default
 add :: JUnitConfig -> SpecWith a -> SpecWith a
-add config = (modifyConfig (addFormatter $ formatter config) >>)
+add config = (modifyConfig (addFormatter f . registerAdditions f) >>)
+ where
+  f = formatter config
 
 -- | Register 'junit', but do not change the default
 register :: JUnitConfig -> SpecWith a -> SpecWith a
-register config = (modifyConfig (registerFormatter $ formatter config) >>)
+register config = (modifyConfig (registerFormatter f . registerAdditions f) >>)
+ where
+  f = formatter config
 
 formatter :: JUnitConfig -> (String, FormatConfig -> IO Format)
 formatter config = ("junit", junit config)
+
+registerAdditions :: (String, FormatConfig -> IO Format) -> Config -> Config
+registerAdditions f config =
+  config
+    { configAvailableFormatters =
+        -- registerFormatter puts it in the front, so we'll do the same
+        map (`combineFormat` liftFormatter f) existing <> existing
+    }
+ where
+  existing :: [(String, Core.FormatConfig -> IO Core.Format)]
+  existing = configAvailableFormatters config
 
 addFormatter :: (String, FormatConfig -> IO Format) -> Config -> Config
 addFormatter f = go . registerFormatter f
@@ -78,6 +101,12 @@ addFormatter f = go . registerFormatter f
 
 defaultFormat :: Core.FormatConfig -> IO Core.Format
 defaultFormat = V2.formatterToFormat V2.checks
+
+combineFormat
+  :: (String, Core.FormatConfig -> IO Core.Format)
+  -> (String, Core.FormatConfig -> IO Core.Format)
+  -> (String, Core.FormatConfig -> IO Core.Format)
+combineFormat (name1, f1) (name2, f2) = (name1 <> "+" <> name2, addFormat f1 f2)
 
 addFormat
   :: (Core.FormatConfig -> IO Core.Format)
