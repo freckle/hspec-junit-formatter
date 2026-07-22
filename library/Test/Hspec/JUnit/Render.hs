@@ -10,6 +10,8 @@ import Control.Monad.Reader (MonadReader (..), asks)
 import Data.Array qualified as Array
 import Data.Fixed (Nano)
 import Data.Foldable (traverse_)
+import Data.List (stripPrefix)
+import Data.Maybe (fromMaybe)
 import Data.Semigroup (Endo (..))
 import Data.Text (Text, pack)
 import Data.Text qualified as T
@@ -56,7 +58,7 @@ renderTestsuite s = do
         <> attr "assertions" (unAttr (pack . show) s.assertions)
         <> attr "time" (unAttr unSeconds s.time)
         <> attr "timestamp" (unAttr (pack . formatISO8601) s.timestamp)
-        <> optionalAttr "file" (unAttr (pack . prefix) <$> s.file)
+        <> optionalAttr "file" (unAttr (pack . prefix . dropPrefix "./") <$> s.file)
     )
     $ traverse_ renderTestsuiteChild s.children
 
@@ -113,7 +115,7 @@ renderTestcase c = do
         <> attr "classname" (unAttr id c.classname)
         <> attr "assertions" (unAttr (pack . show) c.assertions)
         <> attr "time" (unAttr unSeconds c.time)
-        <> optionalAttr "file" (unAttr (pack . prefix) <$> c.file)
+        <> optionalAttr "file" (unAttr (pack . prefix . dropPrefix "./") <$> c.file)
         <> optionalAttr "line" (unAttr (pack . show) <$> c.line)
     )
     $ do
@@ -213,3 +215,9 @@ dropBetween (offset, len) input = begining <> end
  where
   (begining, rest) = T.splitAt offset input
   (_, end) = T.splitAt len rest
+
+-- |
+--
+-- Inlined from <https://hackage-content.haskell.org/package/extra-1.8.1/docs/src/Data.List.Extra.html#dropPrefix>
+dropPrefix :: Eq a => [a] -> [a] -> [a]
+dropPrefix a b = fromMaybe b $ stripPrefix a b
