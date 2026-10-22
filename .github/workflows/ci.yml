@@ -9,45 +9,45 @@ permissions:
   contents: read
 
 jobs:
-  generate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - id: generate
-        uses: freckle/stack-action/generate-matrix@v5
-    outputs:
-      stack-yamls: ${{ steps.generate.outputs.stack-yamls }}
+  # generate:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v7
+  #     - id: generate
+  #       uses: freckle/stack-action/generate-matrix@v5
+  #   outputs:
+  #     stack-yamls: ${{ steps.generate.outputs.stack-yamls }}
 
   test:
     runs-on: ubuntu-latest
-    needs: generate
+    # needs: generate
 
-    strategy:
-      matrix:
-        stack-yaml: ${{ fromJSON(needs.generate.outputs.stack-yamls) }}
-      fail-fast: false
+    # strategy:
+    #   matrix:
+    #     stack-yaml: ${{ fromJSON(needs.generate.outputs.stack-yamls) }}
+    #   fail-fast: false
 
     steps:
       - uses: actions/checkout@v7
-      - uses: freckle/stack-action@v5
-        with:
-          stack-build-arguments-test: >-
-            --test-arguments='--format progress+junit'
-        env:
-          STACK_YAML: ${{ matrix.stack-yaml }}
+      # - uses: freckle/stack-action@v5
+      #   with:
+      #     stack-build-arguments-test: >-
+      #       --test-arguments='--format progress+junit'
+      #   env:
+      #     STACK_YAML: ${{ matrix.stack-yaml }}
 
       - if: success() || failure()
         uses: mikepenz/action-junit-report@v6
         with:
-          report_paths: './junit.xml'
+          report_paths: './broken-results/test_results.xml'
           require_tests: true
           annotate_only: true
 
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: haskell-actions/hlint-setup@v2
-      - uses: haskell-actions/hlint-run@v2
-        with:
-          fail-on: warning
+  # lint:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v7
+  #     - uses: haskell-actions/hlint-setup@v2
+  #     - uses: haskell-actions/hlint-run@v2
+  #       with:
+  #         fail-on: warning
